@@ -12,6 +12,8 @@ public class Cabin
     
     public int MaxCapacity { get; set; }
     
+    public int RegularPrice { get; set; }
+    
     public int Discount { get; set; }
     
     public string Description { get; private set; }

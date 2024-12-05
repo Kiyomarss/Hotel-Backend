@@ -10,6 +10,8 @@ public class CabinResponse
     
     public int MaxCapacity { get; set; }
     
+    public int RegularPrice { get; set; }
+    
     public int Discount { get; set; }
     
     public string Description { get; set; }
@@ -29,6 +31,7 @@ public static class CabinExtensions
             Id = cabin.Id, 
             Name = cabin.Name, 
             MaxCapacity = cabin.MaxCapacity, 
+            RegularPrice = cabin.RegularPrice, 
             Discount = cabin.Discount, 
             Image = cabin.Image, 
             Description = cabin.Description, 
