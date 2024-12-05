@@ -1,0 +1,23 @@
+# کامپایل‌ها
+**/bin/
+**/obj/
+
+# لاگ‌ها و فایل‌های موقتی
+logs/
+*.log
+
+# فایل‌های موقتی عمومی
+Thumbs.db
+*.tmp
+*.bak
+
+# تنظیمات ابزار IDE
+.vs/
+.idea/
+*.user
+*.suo
+*.csproj.user
+*.dotSettings.user
+
+# بسته‌های NuGet
+packages/

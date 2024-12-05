@@ -1,0 +1,38 @@
+using ServiceContracts;
+using ContactsManager.Core.DTO;
+using RepositoryContracts;
+using Microsoft.Extensions.Logging;
+using Serilog;
+
+namespace Services
+{
+ public class CabinsGetterService : ICabinsGetterService
+ {
+  //private field
+  private readonly ICabinsRepository _cabinsRepository;
+  private readonly ILogger<CabinsGetterService> _logger;
+
+  public CabinsGetterService(ICabinsRepository cabinsRepository, ILogger<CabinsGetterService> logger)
+  {
+   _cabinsRepository = cabinsRepository;
+   _logger = logger;
+  }
+  
+  public virtual async Task<CabinResponse?> GetCabinByCabinId(Guid? cabinId)
+  {
+   if (cabinId == null)
+    return null;
+
+   var cabin = await _cabinsRepository.GetCabinByCabinId(cabinId.Value);
+
+   return cabin?.ToCabinResponse();
+  }
+  
+  public virtual async Task<List<CabinResponse>> GetAllCabins()
+  {
+   var cabins = await _cabinsRepository.GetAllCabins();
+
+   return cabins.Select(cabin => cabin.ToCabinResponse()).ToList();
+  }
+ }
+}
