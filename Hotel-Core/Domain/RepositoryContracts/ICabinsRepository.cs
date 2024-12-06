@@ -11,4 +11,6 @@ public interface ICabinsRepository
     Task<Cabin?> GetCabinByCabinId(Guid cabinId);
 
     Task<bool> DeleteCabinByCabinId(Guid cabinId);
+
+    Task<Cabin> UpdateCabin(Cabin cabin);
 }

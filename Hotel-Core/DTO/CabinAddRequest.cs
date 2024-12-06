@@ -2,7 +2,7 @@ using Entities;
 
 namespace ContactsManager.Core.DTO;
 
-public class CabinAddRequest
+public class CabinUpsertRequest
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

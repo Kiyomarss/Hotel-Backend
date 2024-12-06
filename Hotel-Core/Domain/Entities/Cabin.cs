@@ -16,7 +16,7 @@ public class Cabin
     
     public int Discount { get; set; }
     
-    public string Description { get; private set; }
+    public string Description { get; set; }
     
     public byte[] Image { get; set; }
     

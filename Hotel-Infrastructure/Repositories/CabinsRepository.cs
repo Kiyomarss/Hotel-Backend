@@ -39,5 +39,24 @@ namespace Repositories
 
             return rowsDeleted > 0;
         }
+
+        public async Task<Cabin> UpdateCabin(Cabin cabin)
+        {
+            Cabin? matchingCabin = await _db.Cabins.FirstOrDefaultAsync(temp => temp.Id == cabin.Id);
+
+            if (matchingCabin == null)
+                return cabin;
+
+            matchingCabin.Name = cabin.Name;
+            matchingCabin.MaxCapacity = cabin.MaxCapacity;
+            matchingCabin.RegularPrice = cabin.RegularPrice;
+            matchingCabin.Discount = cabin.Discount;
+            matchingCabin.Image = cabin.Image;
+            matchingCabin.Description = cabin.Description;
+
+            int countUpdated = await _db.SaveChangesAsync();
+
+            return matchingCabin;
+        }
     }
 }

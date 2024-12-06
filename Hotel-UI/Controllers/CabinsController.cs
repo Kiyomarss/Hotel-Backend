@@ -10,11 +10,53 @@ public class CabinsController  : Controller
 {
     private readonly ICabinsDeleterService _cabinsDeleterService;
     private readonly ICabinsGetterService _cabinsGetterService;
+    private readonly ICabinsAdderService _cabinsAdderService;
+    private readonly ICabinsUpdaterService _cabinsUpdaterService;
 
-    public CabinsController(ICabinsDeleterService cabinsDeleterService, ICabinsGetterService cabinsGetterService)
+    public CabinsController(ICabinsDeleterService cabinsDeleterService, ICabinsGetterService cabinsGetterService, ICabinsAdderService cabinsAdderService, ICabinsUpdaterService cabinsUpdaterService)
     {
         _cabinsDeleterService = cabinsDeleterService;
         _cabinsGetterService = cabinsGetterService;
+        _cabinsAdderService = cabinsAdderService;
+        _cabinsUpdaterService = cabinsUpdaterService;
+    }
+    
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> Create([FromBody] CabinUpsertRequest dto)
+    {
+        var cabinResponse = await _cabinsAdderService.AddCabin(dto);
+        return Json(new { Cabin = cabinResponse });
+    }
+    
+    [Route("[action]")]
+    [HttpPut]
+    public async Task<IActionResult> Edit([FromBody] CabinUpsertRequest dto)
+    {
+        try
+        {
+            CabinResponse? existingCabin = await _cabinsGetterService.GetCabinByCabinId(dto.Id);
+            if (existingCabin == null)
+            {
+                return NotFound(new { Message = "Cabin not found" });
+            }
+
+            CabinResponse updatedCabin = await _cabinsUpdaterService.UpdateCabin(dto);
+
+            return Ok(new
+            {
+                Message = "Cabin updated successfully",
+                Cabin = updatedCabin
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while updating the cabin",
+                Error = ex.Message
+            });
+        }
     }
     
     [HttpGet]
