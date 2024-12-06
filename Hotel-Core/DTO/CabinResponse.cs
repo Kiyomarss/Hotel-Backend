@@ -16,7 +16,7 @@ public class CabinResponse
     
     public string Description { get; set; }
     
-    public byte[] Image { get; set; }
+    public string Image { get; set; }
     
     public DateTime CreateAt { get; set; }
 }
@@ -26,6 +26,10 @@ public static class CabinExtensions
 {
     public static CabinResponse ToCabinResponse(this Cabin cabin)
     {
+        var base64Image = Convert.ToBase64String(cabin.Image);
+        const string mimeType = "image/jpeg";
+        var imageUrl = $"data:{mimeType};base64,{base64Image}";
+
         return new CabinResponse()
         {
             Id = cabin.Id, 
@@ -33,7 +37,7 @@ public static class CabinExtensions
             MaxCapacity = cabin.MaxCapacity, 
             RegularPrice = cabin.RegularPrice, 
             Discount = cabin.Discount, 
-            Image = cabin.Image, 
+            Image = imageUrl, 
             Description = cabin.Description, 
             CreateAt = cabin.CreateAt
         };

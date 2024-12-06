@@ -73,7 +73,7 @@ namespace Hotel_UI
    {
     options.AddPolicy("AllowSpecificOrigin", builder =>
     {
-     builder.WithOrigins("http://localhost:5173") // دامنه فرانت‌اند شما
+     builder.WithOrigins("http://localhost:3090")
       .AllowAnyHeader()
       .AllowAnyMethod()
       .AllowCredentials();

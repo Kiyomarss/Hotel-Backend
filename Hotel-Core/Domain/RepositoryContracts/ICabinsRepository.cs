@@ -6,7 +6,7 @@ public interface ICabinsRepository
 {
     Task<Cabin> AddCabin(Cabin cabin);
     
-    Task<List<Cabin>> GetAllCabins();
+    Task<List<Cabin>> GetCabins();
 
     Task<Cabin?> GetCabinByCabinId(Guid cabinId);
 

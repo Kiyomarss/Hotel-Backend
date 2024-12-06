@@ -22,7 +22,7 @@ namespace Repositories
             return cabin;
         }
 
-        public async Task<List<Cabin>> GetAllCabins()
+        public async Task<List<Cabin>> GetCabins()
         {
             return await _db.Cabins.ToListAsync();
         }

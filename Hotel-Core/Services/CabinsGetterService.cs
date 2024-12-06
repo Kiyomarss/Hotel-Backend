@@ -28,9 +28,9 @@ namespace Services
    return cabin?.ToCabinResponse();
   }
   
-  public virtual async Task<List<CabinResponse>> GetAllCabins()
+  public virtual async Task<List<CabinResponse>> GetCabins()
   {
-   var cabins = await _cabinsRepository.GetAllCabins();
+   var cabins = await _cabinsRepository.GetCabins();
 
    return cabins.Select(cabin => cabin.ToCabinResponse()).ToList();
   }
