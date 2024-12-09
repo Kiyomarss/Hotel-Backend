@@ -20,18 +20,49 @@ public class CabinsController  : Controller
         _cabinsAdderService = cabinsAdderService;
         _cabinsUpdaterService = cabinsUpdaterService;
     }
-    
+
     [HttpPost]
     [Route("[action]")]
-    public async Task<IActionResult> Create([FromBody] CabinUpsertRequest dto)
+    public async Task<IActionResult> Create([FromForm] CabinUpsertRequest dto)
     {
-        var cabinResponse = await _cabinsAdderService.AddCabin(dto);
-        return Json(new { Cabin = cabinResponse });
+        try
+        {
+            if (dto.Image is { Length: > 0 })
+            {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = Path.GetExtension(dto.Image.FileName).ToLower();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return BadRequest(new { Message = "Invalid file type. Only images are allowed." });
+                }
+
+                dto.ImagePath = await SaveNewImageAsync(dto.Image);
+            }
+
+            var cabinResponse = await _cabinsAdderService.AddCabin(dto);
+
+            return Json(new
+            {
+                Message = "Cabin created successfully",
+                Cabin = cabinResponse
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error while creating cabin: {ex.Message}");
+
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while creating the cabin",
+                Error = ex.Message
+            });
+        }
     }
-    
-    [Route("[action]")]
+
     [HttpPut]
-    public async Task<IActionResult> Edit([FromBody] CabinUpsertRequest dto)
+    [Route("[action]")]
+    public async Task<IActionResult> Edit([FromForm] CabinUpsertRequest dto)
     {
         try
         {
@@ -39,6 +70,25 @@ public class CabinsController  : Controller
             if (existingCabin == null)
             {
                 return NotFound(new { Message = "Cabin not found" });
+            }
+
+            if (dto.Image is { Length: > 0 })
+            {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = Path.GetExtension(dto.Image.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return BadRequest(new { Message = "Invalid file type. Only images are allowed." });
+                }
+
+                DeleteOldImage(existingCabin.ImagePath);
+
+                dto.ImagePath = await SaveNewImageAsync(dto.Image);
+            }
+            else
+            {
+                // اگر تصویر جدید آپلود نشده، تصویر قبلی حفظ شود
+                dto.ImagePath = existingCabin.ImagePath;
             }
 
             CabinResponse updatedCabin = await _cabinsUpdaterService.UpdateCabin(dto);
@@ -51,6 +101,8 @@ public class CabinsController  : Controller
         }
         catch (Exception ex)
         {
+            Console.Error.WriteLine($"Error while updating cabin: {ex.Message}");
+
             return StatusCode(500, new
             {
                 Message = "An error occurred while updating the cabin",
@@ -58,6 +110,39 @@ public class CabinsController  : Controller
             });
         }
     }
+
+    private void DeleteOldImage(string? imagePath)
+    {
+        if (!string.IsNullOrEmpty(imagePath))
+        {
+            var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
+            if (System.IO.File.Exists(oldFilePath))
+            {
+                System.IO.File.Delete(oldFilePath);
+            }
+        }
+    }
+
+    private async Task<string> SaveNewImageAsync(IFormFile image)
+    {
+        var fileName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+        var imagesFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+
+        if (!Directory.Exists(imagesFolderPath))
+        {
+            Directory.CreateDirectory(imagesFolderPath);
+        }
+
+        var filePath = Path.Combine(imagesFolderPath, fileName);
+
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await image.CopyToAsync(stream);
+        }
+
+        return $"/images/{fileName}";
+    }
+
     
     [HttpGet]
     [Route("[action]")]
@@ -66,6 +151,7 @@ public class CabinsController  : Controller
         var cabins = await _cabinsGetterService.GetCabins();
         return Json(new { Cabins = cabins });
     }
+    
     
     [HttpDelete]
     [Route("[action]")]

@@ -1,4 +1,5 @@
 using Entities;
+using Microsoft.AspNetCore.Http;
 
 namespace ContactsManager.Core.DTO;
 
@@ -13,10 +14,12 @@ public class CabinUpsertRequest
     
     public int Discount { get; set; }
     
-    public string Description { get; private set; }
+    public string Description { get; set; }
     
-    public byte[] Image { get; set; }
+    public IFormFile  Image { get; set; }
     
+    public string? ImagePath { get; set; }
+
     public Cabin ToCabin()
     {
         return new Cabin
@@ -25,7 +28,8 @@ public class CabinUpsertRequest
             MaxCapacity = MaxCapacity,
             RegularPrice = RegularPrice,
             Discount = Discount,
-            Image = Image
+            Description = Description,
+            ImagePath = ImagePath
         };
     }
 }

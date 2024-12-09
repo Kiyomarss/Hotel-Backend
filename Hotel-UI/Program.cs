@@ -29,6 +29,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseStaticFiles();
+
 app.MapControllers();
 
 app.UseCors("AllowSpecificOrigin");

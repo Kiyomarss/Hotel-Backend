@@ -33,7 +33,7 @@ namespace Services
    matchingCabin.MaxCapacity = cabinUpdateRequest.MaxCapacity;
    matchingCabin.RegularPrice = cabinUpdateRequest.RegularPrice;
    matchingCabin.Discount = cabinUpdateRequest.Discount;
-   matchingCabin.Image = cabinUpdateRequest.Image;
+   matchingCabin.ImagePath = cabinUpdateRequest.ImagePath;
    matchingCabin.Description = cabinUpdateRequest.Description;
    
    await _cabinsRepository.UpdateCabin(matchingCabin);

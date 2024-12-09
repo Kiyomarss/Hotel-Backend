@@ -18,7 +18,7 @@ public class Cabin
     
     public string Description { get; set; }
     
-    public byte[] Image { get; set; }
+    public string? ImagePath { get; set; }
     
     public DateTime CreateAt { get; set; }
     

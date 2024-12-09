@@ -51,7 +51,7 @@ namespace Repositories
             matchingCabin.MaxCapacity = cabin.MaxCapacity;
             matchingCabin.RegularPrice = cabin.RegularPrice;
             matchingCabin.Discount = cabin.Discount;
-            matchingCabin.Image = cabin.Image;
+            matchingCabin.ImagePath = cabin.ImagePath;
             matchingCabin.Description = cabin.Description;
 
             int countUpdated = await _db.SaveChangesAsync();
