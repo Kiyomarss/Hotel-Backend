@@ -9,6 +9,8 @@
 
     <ItemGroup>
       <Folder Include="Enums\" />
+      <Folder Include="ServiceContracts\Guest\" />
+      <Folder Include="Services\Guest\" />
     </ItemGroup>
 
     <ItemGroup>
