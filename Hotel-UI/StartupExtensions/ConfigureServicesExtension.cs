@@ -32,6 +32,7 @@ namespace Hotel_UI
    
    services.AddScoped<ISettingRepository, SettingRepository>();
    services.AddScoped<ISettingGetterService, SettingGetterService>();
+   services.AddScoped<ISettingUpdaterService, SettingUpdaterService>();
 
    services.AddDbContext<ApplicationDbContext>(options =>
    {

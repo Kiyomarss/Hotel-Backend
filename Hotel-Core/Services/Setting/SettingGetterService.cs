@@ -1,5 +1,5 @@
 using ServiceContracts;
-using ContactsManager.Core.DTO;
+using Hotel_Core.DTO;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -12,9 +12,9 @@ namespace Services
   private readonly ISettingRepository _settingRepository;
   private readonly ILogger<SettingGetterService> _logger;
 
-  public SettingGetterService(ISettingRepository SettingRepository, ILogger<SettingGetterService> logger)
+  public SettingGetterService(ISettingRepository settingRepository, ILogger<SettingGetterService> logger)
   {
-   _settingRepository = SettingRepository;
+   _settingRepository = settingRepository;
    _logger = logger;
   }
   

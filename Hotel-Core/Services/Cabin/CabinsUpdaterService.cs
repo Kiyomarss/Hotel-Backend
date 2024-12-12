@@ -1,5 +1,6 @@
 ﻿using ContactsManager.Core.DTO;
 using Entities;
+using Hotel_Core.DTO;
 using ServiceContracts;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;

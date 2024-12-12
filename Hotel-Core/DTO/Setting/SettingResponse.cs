@@ -1,6 +1,6 @@
 using Entities;
 
-namespace ContactsManager.Core.DTO;
+namespace Hotel_Core.DTO;
 
 public class SettingResponse
 {
@@ -17,19 +17,17 @@ public class SettingResponse
     public DateTime CreateAt { get; set; }
 }
 
-
 public static class SettingExtensions
 {
-    public static SettingResponse ToSettingResponse(this Setting Setting)
+    public static SettingResponse ToSettingResponse(this Setting setting)
     {
         return new SettingResponse()
         {
-            Id = Setting.Id, 
-            MinBookingLength = Setting.MinBookingLength,
-            MaxBookingLength = Setting.MaxBookingLength,
-            MaxGuestsPerBooking = Setting.MaxGuestsPerBooking,
-            BreakfastPrice = Setting.BreakfastPrice,
-            CreateAt = Setting.CreateAt
+            Id = setting.Id, 
+            MinBookingLength = setting.MinBookingLength, 
+            MaxBookingLength = setting.MaxBookingLength, 
+            MaxGuestsPerBooking = setting.MaxGuestsPerBooking, 
+            BreakfastPrice = setting.BreakfastPrice, 
         };
     }
 }

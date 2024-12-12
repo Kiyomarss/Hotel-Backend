@@ -1,4 +1,5 @@
 using ContactsManager.Core.DTO;
+using Hotel_Core.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;

@@ -1,4 +1,4 @@
-namespace ContactsManager.Core.DTO;
+namespace Hotel_Core.DTO;
 
 public class GuidDto
 {

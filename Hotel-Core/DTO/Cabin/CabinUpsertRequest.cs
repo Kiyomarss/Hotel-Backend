@@ -1,7 +1,7 @@
 using Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace ContactsManager.Core.DTO;
+namespace Hotel_Core.DTO;
 
 public class CabinUpsertRequest
 {

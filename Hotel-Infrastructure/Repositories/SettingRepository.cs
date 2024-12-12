@@ -16,7 +16,21 @@ namespace Repositories
 
         public async Task<Setting> GetSetting()
         {
-            return await _db.Setting.FirstAsync();
+            return await _db.Setting.SingleAsync();
+        }
+
+        public async Task<Setting> UpdateSetting(Setting setting)
+        {
+            Setting matchingSetting = await _db.Setting.SingleAsync();
+            
+            matchingSetting.MinBookingLength = setting.MinBookingLength;
+            matchingSetting.MaxBookingLength = setting.MaxBookingLength;
+            matchingSetting.MaxGuestsPerBooking = setting.MaxGuestsPerBooking;
+            matchingSetting.BreakfastPrice = setting.BreakfastPrice;
+
+            int countUpdated = await _db.SaveChangesAsync();
+
+            return matchingSetting;
         }
     }
 }

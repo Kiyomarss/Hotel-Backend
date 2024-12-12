@@ -1,5 +1,6 @@
 using ServiceContracts;
 using ContactsManager.Core.DTO;
+using Hotel_Core.DTO;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
 using Serilog;

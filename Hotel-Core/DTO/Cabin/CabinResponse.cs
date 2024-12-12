@@ -1,6 +1,6 @@
 using Entities;
 
-namespace ContactsManager.Core.DTO;
+namespace Hotel_Core.DTO;
 
 public class CabinResponse
 {
