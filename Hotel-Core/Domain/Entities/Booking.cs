@@ -42,4 +42,7 @@ public class Booking
     public virtual  Guest Guest { get; set; }
 
     public DateTime CreateAt { get; set; }
+    
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
 }

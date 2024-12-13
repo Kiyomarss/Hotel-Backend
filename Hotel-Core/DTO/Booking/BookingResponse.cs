@@ -1,7 +1,4 @@
-using Entities;
-using Hotel_Core.Domain.Entities;
-
-namespace ContactsManager.Core.DTO;
+namespace Hotel_Core.DTO;
 
 public class BookingResponse
 {
@@ -39,7 +36,7 @@ public class BookingResponse
 
 public static class BookingExtensions
 {
-    public static BookingResponse ToBookingResponse(this Booking booking)
+    public static BookingResponse ToBookingResponse(this Domain.Entities.Booking booking)
     {
         return new BookingResponse()
         {

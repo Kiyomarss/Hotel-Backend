@@ -1,10 +1,12 @@
 using Entities;
 using Hotel_Core.Domain.Entities;
 
-namespace ContactsManager.Core.DTO;
+namespace Hotel_Core.DTO;
 
-public class BookingAddRequest
+public class BookingUpsertRequest
 {
+    public Guid Id { get; set; }
+    
     public DateTime StartDate { get; set; }
     
     public DateTime EndDate { get; set; }

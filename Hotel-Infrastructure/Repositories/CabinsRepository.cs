@@ -5,11 +5,11 @@ using RepositoryContracts;
 
 namespace Repositories
 {
-    public class CabinsesRepository : ICabinsRepository
+    public class CabinsRepository : ICabinsRepository
     {
         private readonly ApplicationDbContext _db;
 
-        public CabinsesRepository(ApplicationDbContext db)
+        public CabinsRepository(ApplicationDbContext db)
         {
             _db = db;
         }

@@ -1,5 +1,7 @@
 using ServiceContracts;
 using ContactsManager.Core.DTO;
+using Hotel_Core.Domain.Entities;
+using Hotel_Core.DTO;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -18,14 +20,14 @@ namespace Services
    _logger = logger;
   }
   
-  public virtual async Task<BookingResponse?> GetBookingByBookingId(Guid? bookingId)
+  public virtual async Task<Booking?> GetBookingByBookingId(Guid? bookingId)
   {
    if (bookingId == null)
     return null;
 
    var booking = await _bookingsRepository.GetBookingByBookingId(bookingId.Value);
 
-   return booking?.ToBookingResponse();
+   return booking;
   }
   
   public virtual async Task<List<BookingResponse>> GetAllBookings()

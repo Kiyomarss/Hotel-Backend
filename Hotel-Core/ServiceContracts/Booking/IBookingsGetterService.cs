@@ -1,9 +1,11 @@
 using ContactsManager.Core.DTO;
+using Hotel_Core.Domain.Entities;
+using Hotel_Core.DTO;
 
 namespace ServiceContracts;
 
 public interface IBookingsGetterService
 {
-    Task<BookingResponse?> GetBookingByBookingId(Guid? BookingId);
+    Task<Booking?> GetBookingByBookingId(Guid? bookingId);
     Task<List<BookingResponse>> GetAllBookings();
 }

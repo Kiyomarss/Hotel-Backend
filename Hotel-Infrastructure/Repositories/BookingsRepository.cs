@@ -6,11 +6,11 @@ using RepositoryContracts;
 
 namespace Hotel_Infrastructure.Repositories
 {
-    public class BookingsRepository : IBookingsRepository
+    public class BookingsRepository : RepositoryBase, IBookingsRepository
     {
         private readonly ApplicationDbContext _db;
 
-        public BookingsRepository(ApplicationDbContext db)
+        public BookingsRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
         }
@@ -39,6 +39,13 @@ namespace Hotel_Infrastructure.Repositories
             int rowsDeleted = await _db.SaveChangesAsync();
 
             return rowsDeleted > 0;
+        }
+        
+        public async Task<Booking> UpdateBooking(Booking booking)
+        {
+            int countUpdated = await _db.SaveChangesAsync();
+
+            return booking;
         }
     }
 }
