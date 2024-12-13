@@ -22,8 +22,8 @@ public class BookingsController  : Controller
         _bookingsUpdaterService = bookingsUpdaterService;
     }
 
-    [Route("Bookings/UpdateBooking/{id}")]
     [HttpPatch]
+    [Route("[action]/{id}")]
     public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
     {
         try
@@ -40,7 +40,6 @@ public class BookingsController  : Controller
             return StatusCode(500, new { Message = "An error occurred", Error = ex.Message });
         }
     }
-
 
     
     [HttpGet]
