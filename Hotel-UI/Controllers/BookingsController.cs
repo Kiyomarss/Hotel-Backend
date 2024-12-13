@@ -52,10 +52,10 @@ public class BookingsController  : Controller
     
     
     [HttpDelete]
-    [Route("[action]")]
-    public async Task<IActionResult> Delete([FromBody] GuidDto dto)
+    [Route("[action]/{id}")]
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var deleteBooking = await _bookingsDeleterService.DeleteBooking(dto.Id);
-        return Json(new { data = deleteBooking });
+        var deleteBooking = await _bookingsDeleterService.DeleteBooking(id);
+        return Json(new { isDeleted = deleteBooking });
     }
 }

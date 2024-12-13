@@ -155,10 +155,10 @@ public class CabinsController  : Controller
     
     
     [HttpDelete]
-    [Route("[action]")]
-    public async Task<IActionResult> Delete([FromBody] GuidDto dto)
+    [Route("[action]/{id}")]
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var deleteCabin = await _cabinsDeleterService.DeleteCabin(dto.Id);
-        return Json(new { Cabins = deleteCabin });
+        var deleteCabin = await _cabinsDeleterService.DeleteCabin(id);
+        return Json(new { isDeleted = deleteCabin });
     }
 }
