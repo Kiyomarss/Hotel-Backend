@@ -1,3 +1,5 @@
+using Entities;
+
 namespace Hotel_Core.DTO;
 
 public class BookingResponse
@@ -28,9 +30,31 @@ public class BookingResponse
     
     public Guid CabinId { get; set; }
     
+    public CabinsDto Cabins { get; set; } = new();
+ 
     public Guid GuestId { get; set; }
 
-    public DateTime CreateAt { get; set; }
+    public GuestsDto Guests { get; set; } = new();
+
+    public DateTime created_at { get; set; }
+}
+
+public class GuestsDto
+{
+    public string? FullName { get; set; }
+
+    public string? Country { get; set; }
+    
+    public string? CountryFlag { get; set; }
+    
+    public string? Email { get; set; }
+    
+    public string? NationalID { get; set; }
+}
+
+public class CabinsDto
+{
+    public string? Name { get; set; }
 }
 
 
@@ -40,6 +64,7 @@ public static class BookingExtensions
     {
         return new BookingResponse()
         {
+            Id = booking.Id,
             StartDate = booking.StartDate,
             EndDate = booking.EndDate,
             NumNights = booking.NumNights,
@@ -53,7 +78,19 @@ public static class BookingExtensions
             Observations = booking.Observations,
             CabinId = booking.CabinId,
             GuestId = booking.GuestId,
-            CreateAt = booking.CreateAt,
+            Guests = new GuestsDto
+            {
+                FullName = booking.Guest.FullName,
+                Country = booking.Guest.Nationality,
+                CountryFlag = booking.Guest.CountryFlag,
+                Email = booking.Guest.Email,
+                NationalID = booking.Guest.NationalID
+            },
+            Cabins = new CabinsDto()
+            {
+                Name = booking.Cabin.Name
+            },
+            created_at = booking.CreateAt,
         };
     }
 }

@@ -22,6 +22,65 @@ public class BookingsController  : Controller
         _bookingsUpdaterService = bookingsUpdaterService;
     }
 
+    [HttpGet]
+    [Route("[action]")]
+    public async Task<IActionResult> GetBookings(
+        [FromQuery] string? status,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            var bookingsResult = await _bookingsGetterService.GetBookings(status, sortBy, sortDirection, page, pageSize);
+
+            return Ok(new
+            {
+                Bookings = bookingsResult.Bookings,
+                TotalCount = bookingsResult.TotalCount
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error while fetching bookings: {ex.Message}");
+
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while fetching bookings",
+                Error = ex.Message
+            });
+        }
+    }
+
+    [HttpGet]
+    [Route("[action]/{id}")]
+    public async Task<IActionResult> GetBooking(Guid id)
+    {
+        try
+        {
+            var  booking = await _bookingsGetterService.GetBookingByBookingId(id);
+            
+            if (booking == null)
+            {
+                return NotFound(new { Message = "Booking not found" });
+            }
+            
+            return Json(new { data = booking });
+
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error while updating booking: {ex.Message}");
+
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while updating the booking",
+                Error = ex.Message
+            });
+        }
+    }
+    
     [HttpPatch]
     [Route("[action]/{id}")]
     public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
@@ -44,12 +103,64 @@ public class BookingsController  : Controller
     
     [HttpGet]
     [Route("[action]")]
-    public async Task<IActionResult> GetAllBookings()
+    public async Task<IActionResult> GetBookingsAfterDate([FromQuery] DateTime date)
     {
-        var bookings = await _bookingsGetterService.GetAllBookings();
-        return Json(new { data = bookings });
+        try
+        {
+            var bookings = await _bookingsGetterService.GetBookingsAfterDate(date);
+            return Ok(new { data = bookings });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching bookings: {ex.Message}");
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while fetching bookings",
+                Error = ex.Message
+            });
+        }
     }
     
+    [HttpGet]
+    [Route("[action]")]
+    public async Task<IActionResult> GetStaysAfterDate([FromQuery] DateTime date)
+    {
+        try
+        {
+            var bookings = await _bookingsGetterService.GetStaysAfterDate(date);
+            return Ok(new { data = bookings });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching bookings: {ex.Message}");
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while fetching bookings",
+                Error = ex.Message
+            });
+        }
+    }
+
+    [HttpGet]
+    [Route("[action]")]
+    public async Task<IActionResult> GetStaysTodayActivity()
+    {
+        try
+        {
+            var bookings = await _bookingsGetterService.GetStaysTodayActivity();
+            return Ok(new { data = bookings });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching bookings: {ex.Message}");
+            return StatusCode(500, new
+            {
+                Message = "An error occurred while fetching bookings",
+                Error = ex.Message
+            });
+        }
+    }
+
     
     [HttpDelete]
     [Route("[action]/{id}")]

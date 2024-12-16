@@ -20,21 +20,40 @@ namespace Services
    _logger = logger;
   }
   
-  public virtual async Task<Booking?> GetBookingByBookingId(Guid? bookingId)
+  public virtual async Task<(List<BookingResponse> Bookings, int TotalCount)> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
+  {
+   return await _bookingsRepository.GetBookings(status, sortBy, sortDirection, page, pageSize);
+  }
+  
+  public async Task<List<BookingResponse>> GetBookingsAfterDate(DateTime date)
+  {
+   var bookings = await _bookingsRepository.GetBookingsAfterDate(date);
+
+   return bookings.Select(b => b.ToBookingResponse()).ToList();
+  }
+  
+  public async Task<List<BookingResponse>> GetStaysAfterDate(DateTime date)
+  {
+   var bookings = await _bookingsRepository.GetStaysAfterDate(date);
+
+   return bookings.Select(s => s.ToBookingResponse()).ToList();
+  }
+  
+  public async Task<List<BookingResponse>> GetStaysTodayActivity()
+  {
+   var bookings = await _bookingsRepository.GetStaysTodayActivity();
+
+   return bookings.Select(s => s.ToBookingResponse()).ToList();
+  }
+
+  public virtual async Task<BookingResponse?> GetBookingByBookingId(Guid? bookingId)
   {
    if (bookingId == null)
     return null;
 
-   var booking = await _bookingsRepository.GetBookingByBookingId(bookingId.Value);
+   var booking = await _bookingsRepository.GetBookingByBookingId((Guid)bookingId);
 
-   return booking;
-  }
-  
-  public virtual async Task<List<BookingResponse>> GetAllBookings()
-  {
-   var bookings = await _bookingsRepository.GetAllBookings();
-
-   return bookings.Select(booking => booking.ToBookingResponse()).ToList();
+   return booking.ToBookingResponse();
   }
  }
 }
