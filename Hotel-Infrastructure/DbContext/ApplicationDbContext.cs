@@ -3,20 +3,17 @@ using Entities;
 using Hotel_Core.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using RepositoryContracts;
 
 namespace Hotel_Infrastructure.DbContext
 {
- public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>, IApplicationDbContext
  {
   public ApplicationDbContext(DbContextOptions options) : base(options) { }
   
-  public virtual DbSet<Booking> Bookings { get; set; }
-  public virtual DbSet<Cabin> Cabins { get; set; }
+  public DatabaseFacade Database => base.Database;
   
-  public virtual DbSet<Guest> Guests { get; set; }
-  
-  public virtual DbSet<Setting> Setting { get; set; }
-
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
    base.OnModelCreating(modelBuilder);

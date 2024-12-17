@@ -9,16 +9,16 @@ namespace Hotel_Infrastructure.Repositories
 {
     public class BookingsRepository : RepositoryBase, IBookingsRepository
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IApplicationDbContext _db;
 
-        public BookingsRepository(ApplicationDbContext db) : base(db)
+        public BookingsRepository(IApplicationDbContext db) : base(db)
         {
             _db = db;
         }
 
         public async Task<Booking> AddBooking(Booking booking)
         {
-            _db.Bookings.Add(booking);
+            _db.Set<Booking>().Add(booking);
             await _db.SaveChangesAsync();
 
             return booking;
@@ -26,12 +26,12 @@ namespace Hotel_Infrastructure.Repositories
 
         public async Task<Booking> GetBookingByBookingId(Guid bookingId)
         {
-            return await _db.Bookings.Include(b => b.Guest).Include(b => b.Cabin).FirstAsync(temp => temp.Id == bookingId);
+            return await _db.Set<Booking>().Include(b => b.Guest).Include(b => b.Cabin).FirstAsync(temp => temp.Id == bookingId);
         }
         
         public async Task<bool> DeleteBookingByBookingId(Guid bookingId)
         {
-            _db.Bookings.RemoveRange(_db.Bookings.Where(temp => temp.Id == bookingId));
+            _db.Set<Booking>().RemoveRange(_db.Set<Booking>().Where(temp => temp.Id == bookingId));
             int rowsDeleted = await _db.SaveChangesAsync();
 
             return rowsDeleted > 0;
@@ -39,7 +39,7 @@ namespace Hotel_Infrastructure.Repositories
         
         public async Task<(List<BookingResponse> Bookings, int TotalCount)> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
         {
-            var query = _db.Bookings.AsQueryable();
+            var query = _db.Set<Booking>().AsQueryable();
 
             if (!string.IsNullOrEmpty(status))
             {
@@ -87,7 +87,7 @@ namespace Hotel_Infrastructure.Repositories
 
         public async Task<List<Booking>> GetBookingsAfterDate(DateTime date)
         {
-            return await _db.Bookings
+            return await _db.Set<Booking>()
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
                 .Where(b => b.CreateAt >= date && b.CreateAt <= DateTime.UtcNow)
@@ -96,7 +96,7 @@ namespace Hotel_Infrastructure.Repositories
         
         public async Task<List<Booking>> GetStaysAfterDate(DateTime date)
         {
-            return await _db.Bookings
+            return await _db.Set<Booking>()
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
                 .Where(b => (b.Status == "checked-in" || b.Status == "checked-in") && b.StartDate >= date && b.StartDate <= DateTime.UtcNow)
@@ -105,7 +105,7 @@ namespace Hotel_Infrastructure.Repositories
         
         public async Task<List<Booking>> GetStaysTodayActivity()
         {
-            return await _db.Bookings
+            return await _db.Set<Booking>()
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
                 .Where(b =>

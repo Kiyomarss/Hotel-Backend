@@ -1,14 +1,13 @@
-using Hotel_Infrastructure.DbContext;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using RepositoryContracts;
 
 namespace Hotel_Infrastructure.Repositories
 {
     public abstract class RepositoryBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IApplicationDbContext _db;
 
-        public RepositoryBase(ApplicationDbContext db)
+        public RepositoryBase(IApplicationDbContext db)
         {
             _db = db;
         }
