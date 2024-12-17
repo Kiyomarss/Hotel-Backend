@@ -59,14 +59,14 @@ public class BookingsController  : Controller
     {
         try
         {
-            var  booking = await _bookingsGetterService.GetBookingByBookingId(id);
+            var  bookingResponse = await _bookingsGetterService.GetBookingByBookingId(id);
             
-            if (booking == null)
+            if (bookingResponse == null)
             {
                 return NotFound(new { Message = "Booking not found" });
             }
             
-            return Json(new { data = booking });
+            return Json(new { booking = bookingResponse });
 
         }
         catch (Exception ex)
@@ -107,8 +107,8 @@ public class BookingsController  : Controller
     {
         try
         {
-            var bookings = await _bookingsGetterService.GetBookingsAfterDate(date);
-            return Ok(new { data = bookings });
+            var bookingResponsesList = await _bookingsGetterService.GetBookingsAfterDate(date);
+            return Ok(new { bookings = bookingResponsesList });
         }
         catch (Exception ex)
         {
@@ -127,8 +127,8 @@ public class BookingsController  : Controller
     {
         try
         {
-            var bookings = await _bookingsGetterService.GetStaysAfterDate(date);
-            return Ok(new { data = bookings });
+            var bookingResponsesList = await _bookingsGetterService.GetStaysAfterDate(date);
+            return Ok(new { bookings = bookingResponsesList });
         }
         catch (Exception ex)
         {
@@ -147,8 +147,8 @@ public class BookingsController  : Controller
     {
         try
         {
-            var bookings = await _bookingsGetterService.GetStaysTodayActivity();
-            return Ok(new { data = bookings });
+            var bookingResponsesList = await _bookingsGetterService.GetStaysTodayActivity();
+            return Ok(new { bookings = bookingResponsesList });
         }
         catch (Exception ex)
         {

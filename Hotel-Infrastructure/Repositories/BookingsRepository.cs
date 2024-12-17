@@ -99,7 +99,7 @@ namespace Hotel_Infrastructure.Repositories
             return await _db.Bookings
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
-                .Where(b => b.StartDate >= date && b.StartDate <= DateTime.UtcNow)
+                .Where(b => (b.Status == "checked-in" || b.Status == "checked-in") && b.StartDate >= date && b.StartDate <= DateTime.UtcNow)
                 .ToListAsync();
         }
         
