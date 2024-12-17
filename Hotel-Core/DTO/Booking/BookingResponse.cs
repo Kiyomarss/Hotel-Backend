@@ -36,7 +36,7 @@ public class BookingResponse
 
     public GuestsDto Guests { get; set; } = new();
 
-    public DateTime created_at { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class GuestsDto
@@ -90,7 +90,7 @@ public static class BookingExtensions
             {
                 Name = booking.Cabin.Name
             },
-            created_at = booking.CreateAt,
+            CreatedAt = booking.CreateAt,
         };
     }
 }
