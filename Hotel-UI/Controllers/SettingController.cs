@@ -20,28 +20,14 @@ public class SettingsController  : Controller
     [Route("[action]")]
     public async Task<IActionResult> Edit([FromBody] SettingUpsertRequest dto)
     {
-        try
-        {
-            SettingResponse updatedSetting = await _settingUpdaterService.UpdateSetting(dto);
+        SettingResponse updatedSetting = await _settingUpdaterService.UpdateSetting(dto);
 
-            return Ok(new
-            {
-                Message = "Setting updated successfully",
-                Setting = updatedSetting
-            });
-        }
-        catch (Exception ex)
+        return Ok(new
         {
-            Console.Error.WriteLine($"Error while updating Setting: {ex.Message}");
-
-            return StatusCode(500, new
-            {
-                Message = "An error occurred while updating the Setting",
-                Error = ex.Message
-            });
-        }
+            Message = "Setting updated successfully",
+            Setting = updatedSetting
+        });
     }
-    
     
     [HttpGet]
     [Route("[action]")]

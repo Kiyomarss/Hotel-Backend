@@ -1,53 +1,67 @@
-﻿using Serilog;
+﻿using System.Net;
+using Newtonsoft.Json;
 
 namespace Hotel_UI.Middleware
 {
- // You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
- public class ExceptionHandlingMiddleware
- {
-  private readonly RequestDelegate _next;
-  private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-  private readonly IDiagnosticContext _diagnosticContext;
-
-
-  public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IDiagnosticContext diagnosticContext)
-  {
-   _next = next; //represents the subsequent middleware
-   _logger = logger;
-   _diagnosticContext = diagnosticContext;
-  }
-
-  public async Task Invoke(HttpContext httpContext)
-  {
-   try
-   {
-    await _next(httpContext);
-   }
-   catch (Exception ex)
-   {
-    if (ex.InnerException != null)
+    public class ExceptionHandlingMiddleware
     {
-     _logger.LogError("{ExceptionType} {ExceptionMessage}", ex.InnerException.GetType().ToString(), ex.InnerException.Message);
+        private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        {
+            _next = next;
+            _logger = logger;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            try
+            {
+                await _next(context);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(context, ex);
+            }
+        }
+
+        private Task HandleExceptionAsync(HttpContext context, Exception exception)
+        {
+            // تعیین وضعیت HTTP بر اساس نوع استثنا
+            var statusCode = (int)HttpStatusCode.InternalServerError;
+            var message = "Internal Server Error. Please try again later.";
+
+            if (exception is ArgumentException) // مثال: برای استثنای خاص
+            {
+                statusCode = (int)HttpStatusCode.BadRequest; // یا هر وضعیت مناسب دیگر
+                message = exception.Message; // پیام خاص استثنا
+            }
+
+            // ثبت خطا
+            _logger.LogError(exception, "An unhandled exception occurred.");
+
+            // تنظیم پاسخ
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+
+            var response = new
+            {
+                statusCode = statusCode,
+                message = message,
+                detailed = context.RequestServices.GetService<IHostEnvironment>().IsDevelopment() ? exception.ToString() : null // جزئیات در محیط توسعه
+            };
+
+            return context.Response.WriteAsync(JsonConvert.SerializeObject(response));
+        }
     }
-    else
+
+    // Extension method used to add the middleware to the HTTP request pipeline.
+    public static class ExceptionHandlingMiddlewareExtensions
     {
-     _logger.LogError("{ExceptionType} {ExceptionMessage}", ex.GetType().ToString(), ex.Message);
+        public static IApplicationBuilder UseExceptionHandlingMiddleware(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<ExceptionHandlingMiddleware>();
+        }
     }
-
-    //httpContext.Response.StatusCode = 500;
-    //await httpContext.Response.WriteAsync("Error occurred");
-
-    throw;
-   }
-  }
- }
-
- // Extension method used to add the middleware to the HTTP request pipeline.
- public static class ExceptionHandlingMiddlewareExtensions
- {
-  public static IApplicationBuilder UseExceptionHandlingMiddleware(this IApplicationBuilder builder)
-  {
-   return builder.UseMiddleware<ExceptionHandlingMiddleware>();
-  }
- }
 }

@@ -31,136 +31,64 @@ public class BookingsController  : Controller
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        try
-        {
-            var bookingsResult = await _bookingsGetterService.GetBookings(status, sortBy, sortDirection, page, pageSize);
+        var bookingsResult = await _bookingsGetterService.GetBookings(status, sortBy, sortDirection, page, pageSize);
 
-            return Ok(new
-            {
-                Bookings = bookingsResult.Bookings,
-                TotalCount = bookingsResult.TotalCount
-            });
-        }
-        catch (Exception ex)
+        return Ok(new
         {
-            Console.Error.WriteLine($"Error while fetching bookings: {ex.Message}");
-
-            return StatusCode(500, new
-            {
-                Message = "An error occurred while fetching bookings",
-                Error = ex.Message
-            });
-        }
+            Bookings = bookingsResult.Bookings,
+            TotalCount = bookingsResult.TotalCount
+        });
     }
 
     [HttpGet]
     [Route("[action]/{id}")]
     public async Task<IActionResult> GetBooking(Guid id)
     {
-        try
-        {
-            var  bookingResponse = await _bookingsGetterService.GetBookingByBookingId(id);
-            
-            if (bookingResponse == null)
-            {
-                return NotFound(new { Message = "Booking not found" });
-            }
-            
-            return Json(new { booking = bookingResponse });
+        var bookingResponse = await _bookingsGetterService.GetBookingByBookingId(id);
 
-        }
-        catch (Exception ex)
+        if (bookingResponse == null)
         {
-            Console.Error.WriteLine($"Error while updating booking: {ex.Message}");
-
-            return StatusCode(500, new
-            {
-                Message = "An error occurred while updating the booking",
-                Error = ex.Message
-            });
+            return NotFound(new { Message = "Booking not found" });
         }
+
+        return Json(new { booking = bookingResponse });
     }
     
     [HttpPatch]
     [Route("[action]/{id}")]
     public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
     {
-        try
+        var updatedBooking = await _bookingsUpdaterService.UpdateBooking(id, patchDoc);
+        return Ok(new
         {
-            var updatedBooking = await _bookingsUpdaterService.UpdateBooking(id, patchDoc);
-            return Ok(new
-            {
-                Message = "Booking updated successfully",
-                Booking = updatedBooking
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Message = "An error occurred", Error = ex.Message });
-        }
+            Message = "Booking updated successfully",
+            Booking = updatedBooking
+        });
     }
-
     
     [HttpGet]
     [Route("[action]")]
     public async Task<IActionResult> GetBookingsAfterDate([FromQuery] DateTime date)
     {
-        try
-        {
-            var bookingResponsesList = await _bookingsGetterService.GetBookingsAfterDate(date);
-            return Ok(new { bookings = bookingResponsesList });
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error fetching bookings: {ex.Message}");
-            return StatusCode(500, new
-            {
-                Message = "An error occurred while fetching bookings",
-                Error = ex.Message
-            });
-        }
+        var bookingResponsesList = await _bookingsGetterService.GetBookingsAfterDate(date);
+        return Ok(new { bookings = bookingResponsesList });
     }
     
     [HttpGet]
     [Route("[action]")]
     public async Task<IActionResult> GetStaysAfterDate([FromQuery] DateTime date)
     {
-        try
-        {
-            var bookingResponsesList = await _bookingsGetterService.GetStaysAfterDate(date);
-            return Ok(new { bookings = bookingResponsesList });
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error fetching bookings: {ex.Message}");
-            return StatusCode(500, new
-            {
-                Message = "An error occurred while fetching bookings",
-                Error = ex.Message
-            });
-        }
+        var bookingResponsesList = await _bookingsGetterService.GetStaysAfterDate(date);
+        return Ok(new { bookings = bookingResponsesList });
     }
 
     [HttpGet]
     [Route("[action]")]
     public async Task<IActionResult> GetStaysTodayActivity()
     {
-        try
-        {
-            var bookingResponsesList = await _bookingsGetterService.GetStaysTodayActivity();
-            return Ok(new { bookings = bookingResponsesList });
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error fetching bookings: {ex.Message}");
-            return StatusCode(500, new
-            {
-                Message = "An error occurred while fetching bookings",
-                Error = ex.Message
-            });
-        }
+        var bookingResponsesList = await _bookingsGetterService.GetStaysTodayActivity();
+        return Ok(new { bookings = bookingResponsesList });
     }
-
     
     [HttpDelete]
     [Route("[action]/{id}")]
