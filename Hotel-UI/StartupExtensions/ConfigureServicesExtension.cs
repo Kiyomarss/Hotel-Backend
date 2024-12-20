@@ -1,7 +1,10 @@
 ﻿using System.Text;
+using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Infrastructure.DbContext;
 using Hotel_Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -95,6 +98,22 @@ namespace Hotel_UI
       NamingStrategy = new CamelCaseNamingStrategy()
      };
     });
+   
+   services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
+     options.Password.RequiredLength = 5;
+     options.Password.RequireNonAlphanumeric = false;
+     options.Password.RequireUppercase = false;
+     options.Password.RequireLowercase = true;
+     options.Password.RequireDigit = false;
+     options.Password.RequiredUniqueChars = 3; //Eg: AB12AB (unique characters are A,B,1,2)
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+
+    .AddDefaultTokenProviders()
+
+    .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
+
+    .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
    
    services.AddHttpLogging(options =>
    {
