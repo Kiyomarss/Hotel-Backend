@@ -1,8 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using ContactsManager.Core.Domain.IdentityEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Hotel_UI.Controllers
 {
@@ -39,7 +42,7 @@ namespace Hotel_UI.Controllers
             return Ok(new { message = "User registered successfully." });
         }
 
-        [HttpPost]    
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -56,21 +59,11 @@ namespace Hotel_UI.Controllers
             if (!result)
                 return Unauthorized(new { message = "Invalid email or password." });
 
-            // Add custom claims and sign in
-            var claims = new List<Claim>
-            {
-                new (ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new (ClaimTypes.Email, user.Email),
-                new ("sub", user.Id.ToString())
-            };
-
-            var identity = new ClaimsIdentity(claims, "Identity.Application");
-            var principal = new ClaimsPrincipal(identity);
-            
-            await _signInManager.SignInAsync(user, isPersistent: false, authenticationMethod: "Identity.Application");
+            var token = GenerateJwtToken(user);
 
             return Ok(new
             {
+                token,
                 user = new
                 {
                     id = user.Id,
@@ -81,6 +74,30 @@ namespace Hotel_UI.Controllers
             });
         }
         
+        private string GenerateJwtToken(ApplicationUser user)
+        {
+            var key = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32)); // استفاده از یک کلید تصادفی 32 بایتی
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // شناسه یکتا
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "YourIssuerHere",
+                audience: "YourAudienceHere",
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2), // زمان انقضای توکن
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token); // تبدیل به رشته
+        }
+
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Logout()
@@ -90,33 +107,23 @@ namespace Hotel_UI.Controllers
             return Ok(new { message = "Logout successful." });
         }
         
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> GetCurrentUser()
-        {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized(new { message = "User is not authenticated." });
-
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-                return NotFound(new { message = "User not found." });
-
-            return Ok(new
-            {
-                id = user.Id,
-                fullName = user.PersonName,
-                email = user.Email
-            });
-        }
-        
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
         {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var token = Request.Headers["Authorization"].ToString()?.Replace("Bearer ", "");
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { message = "Token is missing." });
+
+            // اعتبارسنجی و استخراج claims از توکن
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+
+            if (jsonToken == null)
+                return Unauthorized(new { message = "Invalid token." });
+
+            var userId = jsonToken?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value; // از "sub" استفاده کنید
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { message = "User is not authenticated." });
@@ -126,7 +133,6 @@ namespace Hotel_UI.Controllers
             if (user == null)
                 return NotFound(new { message = "User not found." });
 
-            // Update user info (password or fullName)
             if (!string.IsNullOrEmpty(request.FullName))
                 user.PersonName = request.FullName;
 
@@ -148,7 +154,19 @@ namespace Hotel_UI.Controllers
         [Route("[action]")]
         public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile avatar)
         {
-            var userId = User?.FindFirst("sub")?.Value;
+            var token = Request.Headers["Authorization"].ToString()?.Replace("Bearer ", "");
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { message = "Token is missing." });
+
+            // اعتبارسنجی و استخراج claims از توکن
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+
+            if (jsonToken == null)
+                return Unauthorized(new { message = "Invalid token." });
+
+            var userId = jsonToken?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value; // از "sub" استفاده کنید
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { message = "User is not authenticated." });
@@ -168,7 +186,7 @@ namespace Hotel_UI.Controllers
             if (!updateResult.Succeeded)
                 return BadRequest(new { message = string.Join(", ", updateResult.Errors.Select(e => e.Description)) });
 
-            return Ok(new { avatarPath = avatarPath, message = "Avatar updated successfully." });
+            return Ok(new { avatar = avatarPath, message = "Avatar updated successfully." });
         }
 
         private async Task<string> SaveNewAvatarAsync(IFormFile avatar)
