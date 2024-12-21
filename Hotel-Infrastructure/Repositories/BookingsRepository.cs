@@ -99,7 +99,7 @@ namespace Hotel_Infrastructure.Repositories
             return await _db.Set<Booking>()
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
-                .Where(b => (b.Status == "checked-in" || b.Status == "checked-in") && b.StartDate >= date && b.StartDate <= DateTime.UtcNow)
+                .Where(b => (b.Status == "checked-in" || b.Status == "unconfirmed"))
                 .ToListAsync();
         }
         
@@ -109,8 +109,8 @@ namespace Hotel_Infrastructure.Repositories
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
                 .Where(b =>
-                    (b.Status == "unconfirmed" && b.StartDate.Date == DateTime.UtcNow.Date) ||
-                    (b.Status == "checked-in" && b.EndDate.Date == DateTime.UtcNow.Date))
+                    (b.Status == "unconfirmed" /*&& b.StartDate.Date == DateTime.UtcNow.Date*/) ||
+                    (b.Status == "checked-in" /*&& b.EndDate.Date == DateTime.UtcNow.Date*/))
                 .OrderBy(b => b.CreateAt)
                 .ToListAsync();
         }

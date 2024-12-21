@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ContactsManager.Core.Domain.IdentityEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -45,14 +46,39 @@ namespace Hotel_UI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(new { message = "Invalid input." });
 
-            var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, false);
+            var user = await _userManager.FindByEmailAsync(request.Email);
 
-            if (!result.Succeeded)
-            {
+            if (user == null)
                 return Unauthorized(new { message = "Invalid email or password." });
-            }
 
-            return Ok(new { message = "Login successful." });
+            var result = await _userManager.CheckPasswordAsync(user, request.Password);
+
+            if (!result)
+                return Unauthorized(new { message = "Invalid email or password." });
+
+            // Add custom claims and sign in
+            var claims = new List<Claim>
+            {
+                new (ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new (ClaimTypes.Email, user.Email),
+                new ("sub", user.Id.ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, "Identity.Application");
+            var principal = new ClaimsPrincipal(identity);
+            
+            await _signInManager.SignInAsync(user, isPersistent: false, authenticationMethod: "Identity.Application");
+
+            return Ok(new
+            {
+                user = new
+                {
+                    id = user.Id,
+                    fullName = user.PersonName,
+                    email = user.Email,
+                    avatar = user.AvatarPath
+                }
+            });
         }
         
         [HttpPost]
@@ -68,7 +94,7 @@ namespace Hotel_UI.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = User?.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { message = "User is not authenticated." });
@@ -90,7 +116,7 @@ namespace Hotel_UI.Controllers
         [Route("[action]")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
         {
-            var userId = User?.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { message = "User is not authenticated." });

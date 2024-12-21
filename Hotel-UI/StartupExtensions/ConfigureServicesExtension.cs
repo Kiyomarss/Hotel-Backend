@@ -2,6 +2,7 @@
 using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Infrastructure.DbContext;
 using Hotel_Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -114,6 +115,15 @@ namespace Hotel_UI
     .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
 
     .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
+   
+   services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+     options.Cookie.HttpOnly = true;
+     options.LoginPath = "/Account/Login";
+     options.LogoutPath = "/Account/Logout";
+     options.SlidingExpiration = true;
+    });
    
    services.AddHttpLogging(options =>
    {
