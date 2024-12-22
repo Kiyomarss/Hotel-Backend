@@ -147,7 +147,16 @@ namespace Hotel_UI.Controllers
             if (!updateResult.Succeeded)
                 return BadRequest(new { message = string.Join(", ", updateResult.Errors.Select(e => e.Description)) });
 
-            return Ok(new { message = "User updated successfully." });
+            return Ok(new
+            {
+                user = new
+                {
+                    id = user.Id,
+                    fullName = user.PersonName,
+                    email = user.Email,
+                    avatar = user.AvatarPath
+                }
+            });
         }
 
         [HttpPost]
