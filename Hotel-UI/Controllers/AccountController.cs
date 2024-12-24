@@ -112,47 +112,51 @@ namespace Hotel_UI.Controllers
         }
         
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
         {
-            var token = Request.Headers["Authorization"].ToString()?.Replace("Bearer ", "");
-
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized(new { message = "Token is missing." });
-
-            // اعتبارسنجی و استخراج claims از توکن
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
-
-            if (jsonToken == null)
-                return Unauthorized(new { message = "Invalid token." });
-
-            var userId = jsonToken?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value; // از "sub" استفاده کنید
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { message = "User is not authenticated." });
 
             var user = await _userManager.FindByIdAsync(userId);
-
             if (user == null)
                 return NotFound(new { message = "User not found." });
 
-            if (!string.IsNullOrEmpty(request.FullName))
-                user.PersonName = request.FullName;
+            var isPasswordUpdate = !string.IsNullOrEmpty(request.Password) && !string.IsNullOrEmpty(request.CurrentPassword);
+            var isFullNameUpdate = !string.IsNullOrEmpty(request.FullName);
 
-            if (!string.IsNullOrEmpty(request.Password))
+            if (isPasswordUpdate && isFullNameUpdate)
+                return BadRequest(new { message = "Only one field can be updated at a time (either password or full name)." });
+
+            if (!isPasswordUpdate && !isFullNameUpdate)
+                return BadRequest(new { message = "At least one field (password or full name) must be provided." });
+
+            if (isFullNameUpdate)
+            {
+                user.PersonName = request.FullName;
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    var errorMessages = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                    return BadRequest(new { message = errorMessages });
+                }
+            }
+
+            else if (isPasswordUpdate)
             {
                 if (string.IsNullOrEmpty(request.CurrentPassword))
-                    return BadRequest(new { message = "Current password is required." });
+                    return BadRequest(new { message = "Current password is required for updating password." });
 
                 var passwordChangeResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.Password);
                 if (!passwordChangeResult.Succeeded)
-                    return BadRequest(new { message = string.Join(", ", passwordChangeResult.Errors.Select(e => e.Description)) });
+                {
+                    var errorMessages = string.Join(", ", passwordChangeResult.Errors.Select(e => e.Description));
+                    return BadRequest(new { message = errorMessages });
+                }
             }
-
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-                return BadRequest(new { message = string.Join(", ", updateResult.Errors.Select(e => e.Description)) });
 
             return Ok(new
             {
