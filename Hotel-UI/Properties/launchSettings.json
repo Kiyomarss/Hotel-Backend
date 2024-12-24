@@ -6,7 +6,10 @@
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5125",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "JWT_ISSUER": "http://localhost:5125",
+        "JWT_AUDIENCE": "http://localhost:3090",
+        "JWT_SECRET": "!@#$s3cReTKeY_3090_jwt^&*123456789"
       }
     }
   }

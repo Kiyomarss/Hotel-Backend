@@ -45,25 +45,6 @@ namespace Hotel_UI
    {
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
    });
-
-   services.AddAuthentication(options =>
-    {
-     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-     options.TokenValidationParameters = new TokenValidationParameters
-     {
-      ValidateIssuer = true,
-      ValidateAudience = true,
-      ValidateLifetime = true,
-      ValidateIssuerSigningKey = true,
-      ValidIssuer = "YourIssuerHere",
-      ValidAudience = "YourAudienceHere",
-      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKeyHere"))
-     };
-    });
    
    services.AddEndpointsApiExplorer();
 
@@ -115,15 +96,6 @@ namespace Hotel_UI
     .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
 
     .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
-   
-   services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-     options.Cookie.HttpOnly = true;
-     options.LoginPath = "/Account/Login";
-     options.LogoutPath = "/Account/Logout";
-     options.SlidingExpiration = true;
-    });
    
    services.AddHttpLogging(options =>
    {

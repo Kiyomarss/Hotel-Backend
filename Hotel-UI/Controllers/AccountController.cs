@@ -1,10 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
+using System.Text;
 using ContactsManager.Core.Domain.IdentityEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Hotel_UI.Controllers
@@ -76,29 +76,33 @@ namespace Hotel_UI.Controllers
         
         private string GenerateJwtToken(ApplicationUser user)
         {
-            var key = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32)); // استفاده از یک کلید تصادفی 32 بایتی
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // شناسه یکتا
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new (JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new (JwtRegisteredClaimNames.Email, user.Email),
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new (JwtRegisteredClaimNames.NameId, user.Id.ToString()),
+                // سایر اطلاعات مورد نیاز برای claims
             };
 
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddHours(1);
+
             var token = new JwtSecurityToken(
-                issuer: "YourIssuerHere",
-                audience: "YourAudienceHere",
+                issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
+                audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(2), // زمان انقضای توکن
+                expires: expiration,
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token); // تبدیل به رشته
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public async Task<IActionResult> Logout()
         {
