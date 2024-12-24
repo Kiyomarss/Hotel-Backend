@@ -142,7 +142,10 @@ namespace Hotel_UI.Controllers
 
             if (!string.IsNullOrEmpty(request.Password))
             {
-                var passwordChangeResult = await _userManager.ChangePasswordAsync(user, request.Password, request.Password);
+                if (string.IsNullOrEmpty(request.CurrentPassword))
+                    return BadRequest(new { message = "Current password is required." });
+
+                var passwordChangeResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.Password);
                 if (!passwordChangeResult.Succeeded)
                     return BadRequest(new { message = string.Join(", ", passwordChangeResult.Errors.Select(e => e.Description)) });
             }
@@ -227,7 +230,10 @@ namespace Hotel_UI.Controllers
     public class UpdateUserRequest
     {
         public string FullName { get; set; }
+        
         public string Password { get; set; }
+        
+        public string CurrentPassword { get; set; }
     }
 }
 
