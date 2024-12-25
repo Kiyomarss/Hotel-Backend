@@ -66,6 +66,7 @@ app.UseHttpLogging();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseStaticFiles();

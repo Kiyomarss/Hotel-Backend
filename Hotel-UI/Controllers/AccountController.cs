@@ -61,22 +61,20 @@ namespace Hotel_UI.Controllers
             if (!result)
                 return Unauthorized(new { message = "Invalid credentials." });
 
-            var token = GenerateJwtToken(user);
-
-            return Ok(new
+            try
             {
-                token,
-                user = new
-                {
-                    id = user.Id,
-                    fullName = user.PersonName,
-                    email = user.Email,
-                    avatar = user.AvatarPath
-                }
-            });
+                var token = await GenerateJwtToken(user);
+                return Ok(new { token, user = new { id = user.Id, fullName = user.PersonName, email = user.Email, avatar = user.AvatarPath } });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal server error. Please try again later." });
+            }
+            ;
         }
         
-        private string GenerateJwtToken(ApplicationUser user)
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var claims = new List<Claim>
             {
@@ -85,6 +83,9 @@ namespace Hotel_UI.Controllers
                 new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new (JwtRegisteredClaimNames.NameId, user.Id.ToString()),
             };
+            
+            var roles = await _userManager.GetRolesAsync(user);
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var secretKey = _configuration["Jwt:Key"];
             if (string.IsNullOrEmpty(secretKey))
@@ -112,7 +113,6 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         [Route("[action]")]
         public async Task<IActionResult> Logout()
         {
@@ -122,7 +122,7 @@ namespace Hotel_UI.Controllers
         }
         
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin, User")]
         [Route("[action]")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
         {
