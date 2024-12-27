@@ -1,10 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel-UI", "Hotel-UI.csproj", "{585060B4-16CA-4D76-B59C-7455247E63C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel-Infrastructure", "..\Hotel-Infrastructure\Hotel-Infrastructure.csproj", "{3127BD89-E541-4C45-9C60-3BF7C7B8194A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel-Core", "..\Hotel-Core\Hotel-Core.csproj", "{1223C0B1-804B-4773-B307-EF86A3707AE2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{89FDB608-B1F1-430A-929A-E83DEAB4BB0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C964E0BD-675F-4C93-B161-5E18F40FDE34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel-ControllerTests", "..\Hotel-ControllerTests\Hotel-ControllerTests.csproj", "{CE08B032-C599-425E-BDE1-C65F85EBA795}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel-IntegrationTests", "..\Hotel-IntegrationTests\Hotel-IntegrationTests.csproj", "{C68763F4-91A0-4D37-9105-F417CF487EDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel-ServiceTests", "..\Hotel-ServiceTests\Hotel-ServiceTests.csproj", "{03577208-B513-4E23-9316-CFFC065893F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +37,28 @@ Global
 		{1223C0B1-804B-4773-B307-EF86A3707AE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1223C0B1-804B-4773-B307-EF86A3707AE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1223C0B1-804B-4773-B307-EF86A3707AE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE08B032-C599-425E-BDE1-C65F85EBA795}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE08B032-C599-425E-BDE1-C65F85EBA795}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE08B032-C599-425E-BDE1-C65F85EBA795}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE08B032-C599-425E-BDE1-C65F85EBA795}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C68763F4-91A0-4D37-9105-F417CF487EDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C68763F4-91A0-4D37-9105-F417CF487EDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C68763F4-91A0-4D37-9105-F417CF487EDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C68763F4-91A0-4D37-9105-F417CF487EDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03577208-B513-4E23-9316-CFFC065893F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03577208-B513-4E23-9316-CFFC065893F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03577208-B513-4E23-9316-CFFC065893F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03577208-B513-4E23-9316-CFFC065893F7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{585060B4-16CA-4D76-B59C-7455247E63C8} = {C964E0BD-675F-4C93-B161-5E18F40FDE34}
+		{3127BD89-E541-4C45-9C60-3BF7C7B8194A} = {C964E0BD-675F-4C93-B161-5E18F40FDE34}
+		{1223C0B1-804B-4773-B307-EF86A3707AE2} = {C964E0BD-675F-4C93-B161-5E18F40FDE34}
+		{CE08B032-C599-425E-BDE1-C65F85EBA795} = {89FDB608-B1F1-430A-929A-E83DEAB4BB0D}
+		{C68763F4-91A0-4D37-9105-F417CF487EDA} = {89FDB608-B1F1-430A-929A-E83DEAB4BB0D}
+		{03577208-B513-4E23-9316-CFFC065893F7} = {89FDB608-B1F1-430A-929A-E83DEAB4BB0D}
 	EndGlobalSection
 EndGlobal
