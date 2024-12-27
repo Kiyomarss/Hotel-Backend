@@ -19,20 +19,9 @@ namespace Services
    _logger = logger;
   }
   
-  public async Task<bool> DeleteCabin(Guid? cabinId)
+  public async Task<bool> DeleteCabin(Guid cabinId)
   {
-   if (cabinId == null)
-   {
-    throw new ArgumentNullException(nameof(cabinId));
-   }
-
-   Cabin? cabin = await _cabinsRepository.GetCabinByCabinId(cabinId.Value);
-   if (cabin == null)
-    return false;
-
-   await _cabinsRepository.DeleteCabinByCabinId(cabinId.Value);
-
-   return true;
+   return await _cabinsRepository.DeleteCabinByCabinId(cabinId);
   }
  }
 }

@@ -21,25 +21,11 @@ namespace Services
 
   public async Task<CabinResponse> UpdateCabin(CabinUpsertRequest cabinUpdateRequest)
   {
-   if (cabinUpdateRequest == null)
-    throw new ArgumentNullException(nameof(cabinUpdateRequest));
-   
-   Cabin? matchingCabin = await _cabinsRepository.GetCabinByCabinId(cabinUpdateRequest.Id);
-   if (matchingCabin == null)
-   {
-    throw new ArgumentException("Given Cabin id doesn't exist");
-   }
+   ArgumentNullException.ThrowIfNull(cabinUpdateRequest);
 
-   matchingCabin.Name = cabinUpdateRequest.Name;
-   matchingCabin.MaxCapacity = cabinUpdateRequest.MaxCapacity;
-   matchingCabin.RegularPrice = cabinUpdateRequest.RegularPrice;
-   matchingCabin.Discount = cabinUpdateRequest.Discount;
-   matchingCabin.ImagePath = cabinUpdateRequest.ImagePath;
-   matchingCabin.Description = cabinUpdateRequest.Description;
-   
-   await _cabinsRepository.UpdateCabin(matchingCabin);
+   var updatedCabin = await _cabinsRepository.UpdateCabin(cabinUpdateRequest);
 
-   return matchingCabin.ToCabinResponse();
+   return updatedCabin.ToCabinResponse();
   }
  }
 }

@@ -21,12 +21,9 @@ namespace Services
 
   public async Task<CabinResponse> AddCabin(CabinUpsertRequest cabinAddRequest)
   {
-   if (cabinAddRequest == null)
-   {
-    throw new ArgumentNullException(nameof(cabinAddRequest));
-   }
+   ArgumentNullException.ThrowIfNull(cabinAddRequest);
 
-   Cabin cabin = cabinAddRequest.ToCabin();
+   var cabin = cabinAddRequest.ToCabin();
 
    cabin.Id = Guid.NewGuid();
 

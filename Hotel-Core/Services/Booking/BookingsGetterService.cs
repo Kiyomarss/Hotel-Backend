@@ -46,12 +46,12 @@ namespace Services
    return bookings.Select(s => s.ToBookingResponse()).ToList();
   }
 
-  public virtual async Task<BookingResponse?> GetBookingByBookingId(Guid? bookingId)
+  public virtual async Task<BookingResponse?> GetBookingByBookingId(Guid bookingId)
   {
-   if (bookingId == null)
-    return null;
-
-   var booking = await _bookingsRepository.GetBookingByBookingId((Guid)bookingId);
+   var booking = await _bookingsRepository.GetBookingByBookingId(bookingId);
+   
+   if (booking == null)
+    throw new ArgumentException("Given Booking id doesn't exist");
 
    return booking.ToBookingResponse();
   }

@@ -23,17 +23,25 @@ namespace Hotel_Infrastructure.Repositories
 
             return booking;
         }
-
-        public async Task<Booking> GetBookingByBookingId(Guid bookingId)
+        
+        public async Task<Booking?> GetBookingByBookingId(Guid bookingId)
         {
-            return await _db.Set<Booking>().Include(b => b.Guest).Include(b => b.Cabin).FirstAsync(temp => temp.Id == bookingId);
+            var booking = await _db.Set<Booking>()
+                .Include(b => b.Guest)
+                .Include(b => b.Cabin)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+            
+            return booking;
         }
         
         public async Task<bool> DeleteBookingByBookingId(Guid bookingId)
         {
-            _db.Set<Booking>().RemoveRange(_db.Set<Booking>().Where(temp => temp.Id == bookingId));
-            int rowsDeleted = await _db.SaveChangesAsync();
+            var booking = await _db.Set<Booking>().FindAsync(bookingId);
+            if (booking == null) 
+                throw new InvalidOperationException("Booking with the given ID does not exist.");
 
+            _db.Set<Booking>().Remove(booking);
+            var rowsDeleted = await _db.SaveChangesAsync();
             return rowsDeleted > 0;
         }
         
@@ -65,14 +73,13 @@ namespace Hotel_Infrastructure.Repositories
                             ? query.OrderByDescending(b => b.TotalPrice)
                             : query.OrderBy(b => b.TotalPrice);
                         break;
-                    // Add more cases for other sortable properties
                     default:
                         throw new ArgumentException($"Invalid sort column: {sortBy}");
                 }
 
             }
 
-            int totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             var bookings = await query
                 .Skip((page - 1) * pageSize)
@@ -114,11 +121,10 @@ namespace Hotel_Infrastructure.Repositories
                 .OrderBy(b => b.CreateAt)
                 .ToListAsync();
         }
-
         
         public async Task<Booking> UpdateBooking(Booking booking)
         {
-            int countUpdated = await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             return booking;
         }

@@ -9,7 +9,7 @@ public interface IBookingsRepository
 {
     Task<Booking> AddBooking(Booking booking);
     
-    Task<Booking> GetBookingByBookingId(Guid bookingId);
+    Task<Booking?> GetBookingByBookingId(Guid bookingId);
 
     Task<(List<BookingResponse> Bookings, int TotalCount)> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
 

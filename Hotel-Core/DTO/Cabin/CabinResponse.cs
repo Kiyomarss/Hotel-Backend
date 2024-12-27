@@ -24,7 +24,7 @@ public class CabinResponse
 
 public static class CabinExtensions
 {
-    public static CabinResponse ToCabinResponse(this Cabin cabin)
+    public static CabinResponse ToCabinResponse(this Cabin? cabin)
     {
         return new CabinResponse()
         {

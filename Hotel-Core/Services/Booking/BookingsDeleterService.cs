@@ -14,27 +14,17 @@ namespace Services
   private readonly ILogger<BookingsGetterService> _logger;
 
   //constructor
-  public BookingsDeleterService(IBookingsRepository BookingsRepository, ILogger<BookingsGetterService> logger)
+  public BookingsDeleterService(IBookingsRepository bookingsRepository, ILogger<BookingsGetterService> logger)
   {
-   _bookingsRepository = BookingsRepository;
+   _bookingsRepository = bookingsRepository;
    _logger = logger;
   }
 
 
-  public async Task<bool> DeleteBooking(Guid? bookingId)
+  public async Task<bool> DeleteBooking(Guid bookingId)
   {
-   if (bookingId == null)
-   {
-    throw new ArgumentNullException(nameof(bookingId));
-   }
-
-   Booking? booking = await _bookingsRepository.GetBookingByBookingId(bookingId.Value);
-   if (booking == null)
-    return false;
-
-   await _bookingsRepository.DeleteBookingByBookingId(bookingId.Value);
-
-   return true;
+   return await _bookingsRepository.DeleteBookingByBookingId(bookingId);
   }
+
  }
 }

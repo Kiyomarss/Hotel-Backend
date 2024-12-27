@@ -2,6 +2,6 @@
 {
  public interface IBookingsDeleterService
  {
-  Task<bool> DeleteBooking(Guid? bookingId);
+  Task<bool> DeleteBooking(Guid bookingId);
  }
 }

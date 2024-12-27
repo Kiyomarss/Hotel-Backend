@@ -1,4 +1,5 @@
 using Entities;
+using Hotel_Core.DTO;
 
 namespace RepositoryContracts;
 
@@ -12,5 +13,5 @@ public interface ICabinsRepository
 
     Task<bool> DeleteCabinByCabinId(Guid cabinId);
 
-    Task<Cabin> UpdateCabin(Cabin cabin);
+    Task<Cabin> UpdateCabin(CabinUpsertRequest cabinUpsertRequest);
 }

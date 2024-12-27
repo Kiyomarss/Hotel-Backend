@@ -24,7 +24,7 @@ namespace Services
             if (patchDoc == null)
                 throw new ArgumentNullException(nameof(patchDoc));
 
-            Booking? matchingBooking = await _bookingsRepository.GetBookingByBookingId(bookingId);
+            var matchingBooking = await _bookingsRepository.GetBookingByBookingId(bookingId);
             if (matchingBooking == null)
                 throw new ArgumentException("Given Booking id doesn't exist");
 

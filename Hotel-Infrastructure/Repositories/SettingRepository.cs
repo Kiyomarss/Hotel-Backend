@@ -22,14 +22,14 @@ namespace Repositories
 
         public async Task<Setting> UpdateSetting(Setting setting)
         {
-            Setting matchingSetting = await _db.Set<Setting>().SingleAsync();
+            var matchingSetting = await _db.Set<Setting>().SingleAsync();
             
             matchingSetting.MinBookingLength = setting.MinBookingLength;
             matchingSetting.MaxBookingLength = setting.MaxBookingLength;
             matchingSetting.MaxGuestsPerBooking = setting.MaxGuestsPerBooking;
             matchingSetting.BreakfastPrice = setting.BreakfastPrice;
 
-            int countUpdated = await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             return matchingSetting;
         }

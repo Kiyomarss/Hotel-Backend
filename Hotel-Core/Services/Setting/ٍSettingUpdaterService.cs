@@ -23,17 +23,10 @@ namespace Services
   {
    if (settingUpdateRequest == null)
     throw new ArgumentNullException(nameof(settingUpdateRequest));
-   
-   var matchingSetting = await _settingRepository.GetSetting();
-   
-   matchingSetting.MinBookingLength = settingUpdateRequest.MinBookingLength;
-   matchingSetting.MaxBookingLength = settingUpdateRequest.MaxBookingLength;
-   matchingSetting.MaxGuestsPerBooking = settingUpdateRequest.MaxGuestsPerBooking;
-   matchingSetting.BreakfastPrice = settingUpdateRequest.BreakfastPrice;
-   
-   await _settingRepository.UpdateSetting(matchingSetting);
 
-   return matchingSetting.ToSettingResponse();
+   var savedSetting = await _settingRepository.UpdateSetting(settingUpdateRequest.ToSetting());
+
+   return savedSetting.ToSettingResponse();
   }
  }
 }

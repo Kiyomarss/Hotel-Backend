@@ -1,4 +1,5 @@
 using Entities;
+using Hotel_Core.DTO;
 using Hotel_Infrastructure.DbContext;
 using Hotel_Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace Repositories
 
         public async Task<Cabin> AddCabin(Cabin cabin)
         {
-            _db.Set<Cabin>().Add(cabin);
+            await _db.Set<Cabin>().AddAsync(cabin);
             await _db.SaveChangesAsync();
 
             return cabin;
@@ -30,32 +31,37 @@ namespace Repositories
 
         public async Task<Cabin?> GetCabinByCabinId(Guid cabinId)
         {
-            return await _db.Set<Cabin>().FirstOrDefaultAsync(temp => temp.Id == cabinId);
+            return await _db.Set<Cabin>().FindAsync(cabinId);
         }
         
         public async Task<bool> DeleteCabinByCabinId(Guid cabinId)
         {
-            _db.Set<Cabin>().RemoveRange(_db.Set<Cabin>().Where(temp => temp.Id == cabinId));
-            int rowsDeleted = await _db.SaveChangesAsync();
+            var cabin = await _db.Set<Cabin>().FindAsync(cabinId);
+            if (cabin == null)
+                throw new InvalidOperationException("Cabin with the given ID does not exist.");
+            
+            _db.Set<Cabin>().Remove(cabin);
+            var rowsDeleted = await _db.SaveChangesAsync();
 
             return rowsDeleted > 0;
         }
 
-        public async Task<Cabin> UpdateCabin(Cabin cabin)
+        public async Task<Cabin> UpdateCabin(CabinUpsertRequest cabinUpdateRequest)
         {
-            Cabin? matchingCabin = await _db.Set<Cabin>().FirstOrDefaultAsync(temp => temp.Id == cabin.Id);
-
+            var matchingCabin = await _db.Set<Cabin>().FindAsync(cabinUpdateRequest.Id);
             if (matchingCabin == null)
-                return cabin;
+            {
+                throw new InvalidOperationException("Cabin with the given ID does not exist.");
+            }
+            
+            matchingCabin.Name = cabinUpdateRequest.Name;
+            matchingCabin.MaxCapacity = cabinUpdateRequest.MaxCapacity;
+            matchingCabin.RegularPrice = cabinUpdateRequest.RegularPrice;
+            matchingCabin.Discount = cabinUpdateRequest.Discount;
+            matchingCabin.ImagePath = cabinUpdateRequest.ImagePath;
+            matchingCabin.Description = cabinUpdateRequest.Description;
 
-            matchingCabin.Name = cabin.Name;
-            matchingCabin.MaxCapacity = cabin.MaxCapacity;
-            matchingCabin.RegularPrice = cabin.RegularPrice;
-            matchingCabin.Discount = cabin.Discount;
-            matchingCabin.ImagePath = cabin.ImagePath;
-            matchingCabin.Description = cabin.Description;
-
-            int countUpdated = await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             return matchingCabin;
         }

@@ -2,6 +2,6 @@
 {
  public interface ICabinsDeleterService
  {
-  Task<bool> DeleteCabin(Guid? cabinId);
+  Task<bool> DeleteCabin(Guid cabinId);
  }
 }

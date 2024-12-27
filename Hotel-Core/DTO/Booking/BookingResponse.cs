@@ -1,4 +1,5 @@
 using Entities;
+using Hotel_Core.Domain.Entities;
 
 namespace Hotel_Core.DTO;
 
@@ -60,7 +61,7 @@ public class CabinsDto
 
 public static class BookingExtensions
 {
-    public static BookingResponse ToBookingResponse(this Domain.Entities.Booking booking)
+    public static BookingResponse ToBookingResponse(this Booking? booking)
     {
         return new BookingResponse()
         {
