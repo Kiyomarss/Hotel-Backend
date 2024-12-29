@@ -11,7 +11,7 @@ public interface IBookingsRepository
     
     Task<Booking?> GetBookingByBookingId(Guid bookingId);
 
-    Task<(List<BookingResponse> Bookings, int TotalCount)> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
+    Task<PaginatedResult<Booking>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
 
     Task<List<Booking>> GetBookingsAfterDate(DateTime date);
     Task<bool> DeleteBookingByBookingId(Guid bookingId);

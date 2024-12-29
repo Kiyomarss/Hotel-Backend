@@ -35,7 +35,7 @@ public class BookingsController  : Controller
 
         return Ok(new
         {
-            Bookings = bookingsResult.Bookings,
+            Bookings = bookingsResult.Items,
             TotalCount = bookingsResult.TotalCount
         });
     }

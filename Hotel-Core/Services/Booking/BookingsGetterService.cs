@@ -20,9 +20,15 @@ namespace Services
    _logger = logger;
   }
   
-  public virtual async Task<(List<BookingResponse> Bookings, int TotalCount)> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
+  public virtual async Task<PaginatedResult<BookingResponse>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
   {
-   return await _bookingsRepository.GetBookings(status, sortBy, sortDirection, page, pageSize);
+   var paginatedResult = await _bookingsRepository.GetBookings(status, sortBy, sortDirection, page, pageSize);
+
+   return new PaginatedResult<BookingResponse>
+   {
+    Items = paginatedResult.Items.Select(b => b.ToBookingResponse()).ToList(),
+    TotalCount = paginatedResult.TotalCount
+   };
   }
   
   public async Task<List<BookingResponse>> GetBookingsAfterDate(DateTime date)

@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Entities;
 using Hotel_Core.Domain.Entities;
 using Hotel_Core.DTO;
@@ -45,7 +46,7 @@ namespace Hotel_Infrastructure.Repositories
             return rowsDeleted > 0;
         }
         
-        public async Task<(List<BookingResponse> Bookings, int TotalCount)> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
+        public async Task<PaginatedResult<Booking>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
         {
             var query = _db.Set<Booking>().AsQueryable();
 
@@ -53,31 +54,8 @@ namespace Hotel_Infrastructure.Repositories
             {
                 query = query.Where(b => b.Status == status);
             }
-
-            if (!string.IsNullOrEmpty(sortBy))
-            {
-                switch (sortBy)
-                {
-                    case "startDate":
-                        query = sortDirection?.ToLower() == "desc"
-                            ? query.OrderByDescending(b => b.StartDate)
-                            : query.OrderBy(b => b.StartDate);
-                        break;
-                    case "endDate":
-                        query = sortDirection?.ToLower() == "desc"
-                            ? query.OrderByDescending(b => b.EndDate)
-                            : query.OrderBy(b => b.EndDate);
-                        break;
-                    case "totalPrice":
-                        query = sortDirection?.ToLower() == "desc"
-                            ? query.OrderByDescending(b => b.TotalPrice)
-                            : query.OrderBy(b => b.TotalPrice);
-                        break;
-                    default:
-                        throw new ArgumentException($"Invalid sort column: {sortBy}");
-                }
-
-            }
+            
+            query = ApplySorting(query, sortBy, sortDirection);
 
             var totalCount = await query.CountAsync();
 
@@ -86,10 +64,13 @@ namespace Hotel_Infrastructure.Repositories
                 .Take(pageSize)
                 .Include(b => b.Guest)
                 .Include(b => b.Cabin)
-                .Select(x => x.ToBookingResponse())
                 .ToListAsync();
 
-            return (Bookings: bookings, TotalCount: totalCount);
+            return new PaginatedResult<Booking>
+            {
+                Items = bookings,
+                TotalCount = totalCount
+            };
         }
 
         public async Task<List<Booking>> GetBookingsAfterDate(DateTime date)
@@ -127,6 +108,32 @@ namespace Hotel_Infrastructure.Repositories
             await _db.SaveChangesAsync();
 
             return booking;
+        }
+        
+        private static IQueryable<Booking> ApplyFilters(IQueryable<Booking> query, string? status)
+        {
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(b => b.Status == status);
+            }
+            return query;
+        }
+
+        private IQueryable<Booking> ApplySorting(IQueryable<Booking> query, string? sortBy, string? sortDirection)
+        {
+            if (string.IsNullOrEmpty(sortBy)) return query;
+
+            var sortExpression = sortBy.ToLower() switch
+            {
+                "startdate" => (Expression<Func<Booking, object>>)(b => b.StartDate),
+                "enddate" => b => b.EndDate,
+                "totalprice" => b => b.TotalPrice,
+                _ => throw new ArgumentException($"Invalid sort column: {sortBy}")
+            };
+
+            return sortDirection?.ToLower() == "desc"
+                ? query.OrderByDescending(sortExpression)
+                : query.OrderBy(sortExpression);
         }
     }
 }
