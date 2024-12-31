@@ -16,6 +16,8 @@ namespace Hotel_ServiceTests
         private readonly Mock<ILogger<BookingsGetterService>> _mockBookingsGetterServiceLogger;
         private readonly BookingsGetterService _bookingsGetterService;
         private readonly Mock<ILogger<BookingsUpdaterService>> _mockBookingsUpdaterServiceLogger;
+        private readonly BookingsDeleterService _bookingsDeleterService;
+        private readonly Mock<ILogger<BookingsDeleterService>> _mockBookingsDeleterServiceLogger;
         private readonly BookingsUpdaterService _bookingsUpdaterService;
         private readonly Fixture _fixture;
 
@@ -26,6 +28,8 @@ namespace Hotel_ServiceTests
             _bookingsGetterService = new BookingsGetterService(_mockRepository.Object, _mockBookingsGetterServiceLogger.Object);
             _mockBookingsUpdaterServiceLogger = new Mock<ILogger<BookingsUpdaterService>>();
             _bookingsUpdaterService = new BookingsUpdaterService(_mockRepository.Object, _mockBookingsUpdaterServiceLogger.Object);
+            _bookingsDeleterService = new BookingsDeleterService(_mockRepository.Object, _mockBookingsGetterServiceLogger.Object);
+            _mockBookingsDeleterServiceLogger = new Mock<ILogger<BookingsDeleterService>>();            
             _fixture = new Fixture();
         }
 
@@ -210,6 +214,95 @@ namespace Hotel_ServiceTests
             // Assert
             await act.Should().ThrowAsync<ArgumentException>()
                 .WithMessage("Given Booking id doesn't exist");
+        }
+
+        [Fact]
+        public async Task FindBookingById_ShouldReturnBooking_WhenBookingExists()
+        {
+            // Arrange
+            var bookingId = Guid.NewGuid();
+            var booking = _fixture.Build<Booking>()
+                .With(b => b.Id, bookingId)
+                .Create();
+
+            _mockRepository.Setup(repo => repo.FindBookingById(bookingId))
+                .ReturnsAsync(booking);
+
+            // Act
+            var result = await _bookingsGetterService.FindBookingById(bookingId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(booking, options => options.ExcludingMissingMembers());
+
+            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+        }
+
+        [Fact]
+        public async Task FindBookingById_ShouldReturnNull_WhenBookingDoesNotExist()
+        {
+            // Arrange
+            var bookingId = Guid.NewGuid();
+
+            _mockRepository.Setup(repo => repo.FindBookingById(bookingId))
+                .ReturnsAsync((Booking?)null);
+
+            // Act
+            var result = await _bookingsGetterService.FindBookingById(bookingId);
+
+            // Assert
+            result.Should().BeNull();
+
+            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+        }
+        
+        #endregion
+
+        #region BookingsDeleterService
+
+        [Fact]
+        public async Task DeleteBooking_ShouldReturnTrue_WhenBookingIsDeletedSuccessfully()
+        {
+            // Arrange
+            var bookingId = Guid.NewGuid();
+            var booking = _fixture.Build<Booking>()
+                .With(b => b.Id, bookingId)
+                .Create();
+
+            _mockRepository.Setup(repo => repo.FindBookingById(bookingId))
+                .ReturnsAsync(booking);
+
+            _mockRepository.Setup(repo => repo.DeleteBooking(booking))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _bookingsDeleterService.DeleteBooking(bookingId);
+
+            // Assert
+            result.Should().BeTrue();
+
+            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+            _mockRepository.Verify(repo => repo.DeleteBooking(booking), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteBooking_ShouldThrowKeyNotFoundException_WhenBookingDoesNotExist()
+        {
+            // Arrange
+            var bookingId = Guid.NewGuid();
+
+            _mockRepository.Setup(repo => repo.FindBookingById(bookingId))
+                .ReturnsAsync((Booking?)null);
+
+            // Act
+            Func<Task> act = async () => await _bookingsDeleterService.DeleteBooking(bookingId);
+
+            // Assert
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage($"Booking with ID {bookingId} does not exist.");
+
+            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+            _mockRepository.Verify(repo => repo.DeleteBooking(It.IsAny<Booking>()), Times.Never);
         }
 
         #endregion

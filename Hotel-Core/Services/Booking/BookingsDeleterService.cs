@@ -20,11 +20,13 @@ namespace Services
    _logger = logger;
   }
 
-
   public async Task<bool> DeleteBooking(Guid bookingId)
   {
-   return await _bookingsRepository.DeleteBookingByBookingId(bookingId);
-  }
+   var booking = await _bookingsRepository.FindBookingById(bookingId);
+   if (booking == null)
+    throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
 
+   return await _bookingsRepository.DeleteBooking(booking);
+  }
  }
 }

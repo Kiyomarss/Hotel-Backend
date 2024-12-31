@@ -61,5 +61,10 @@ namespace Services
 
    return booking.ToBookingResponse();
   }
+  
+  public virtual async Task<Booking?> FindBookingById(Guid bookingId)
+  {
+   return await _bookingsRepository.FindBookingById(bookingId);
+  }
  }
 }

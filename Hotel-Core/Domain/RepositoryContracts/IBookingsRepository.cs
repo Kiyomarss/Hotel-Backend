@@ -11,10 +11,12 @@ public interface IBookingsRepository
     
     Task<Booking?> GetBookingByBookingId(Guid bookingId);
 
+    Task<Booking?> FindBookingById(Guid bookingId);
+
     Task<PaginatedResult<Booking>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
 
     Task<List<Booking>> GetBookingsAfterDate(DateTime date);
-    Task<bool> DeleteBookingByBookingId(Guid bookingId);
+    Task<bool> DeleteBooking(Booking booking);
 
     Task<Booking> UpdateBooking(Booking booking);
 

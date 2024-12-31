@@ -35,12 +35,13 @@ namespace Hotel_Infrastructure.Repositories
             return booking;
         }
         
-        public async Task<bool> DeleteBookingByBookingId(Guid bookingId)
+        public async Task<Booking?> FindBookingById(Guid bookingId)
         {
-            var booking = await _db.Set<Booking>().FindAsync(bookingId);
-            if (booking == null) 
-                throw new InvalidOperationException("Booking with the given ID does not exist.");
-
+            return await _db.Set<Booking>().FindAsync(bookingId);
+        }
+        
+        public async Task<bool> DeleteBooking(Booking booking)
+        {
             _db.Set<Booking>().Remove(booking);
             var rowsDeleted = await _db.SaveChangesAsync();
             return rowsDeleted > 0;

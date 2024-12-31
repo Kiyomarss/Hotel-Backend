@@ -8,6 +8,8 @@ public interface IBookingsGetterService
 {
     Task<BookingResponse?> GetBookingByBookingId(Guid bookingId);
 
+    Task<Booking?> FindBookingById(Guid bookingId);
+
     Task<PaginatedResult<BookingResponse>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
     
     Task<List<BookingResponse>> GetBookingsAfterDate(DateTime date);
