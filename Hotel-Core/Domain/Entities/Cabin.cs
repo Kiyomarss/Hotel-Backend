@@ -21,6 +21,4 @@ public class Cabin
     public string? ImagePath { get; set; }
     
     public DateTime CreateAt { get; set; }
-    
-    public ICollection<Booking>? Bookings { get; set; }
 }

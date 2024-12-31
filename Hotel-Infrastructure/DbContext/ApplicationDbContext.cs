@@ -26,14 +26,14 @@ namespace Hotel_Infrastructure.DbContext
    modelBuilder.Entity<Booking>(entity =>
    {
     entity.HasOne(b => b.Cabin)
-     .WithMany(c => c.Bookings)
+     .WithMany()
      .HasForeignKey(b => b.CabinId) ;
    });
    
    modelBuilder.Entity<Booking>(entity =>
    {
     entity.HasOne(b => b.Guest)
-     .WithMany(c => c.Bookings)
+     .WithMany()
      .HasForeignKey(b => b.GuestId);
    });
   }

@@ -19,6 +19,4 @@ public class Guest
     public string CountryFlag { get; set; }
     
     public DateTime CreateAt { get; set; }
-    
-    public ICollection<Booking>? Bookings { get; set; }
 }

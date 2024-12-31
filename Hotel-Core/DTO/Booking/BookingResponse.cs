@@ -61,9 +61,9 @@ public class CabinsDto
 
 public static class BookingExtensions
 {
-    public static BookingResponse ToBookingResponse(this Booking? booking)
+    public static BookingResponse ToBookingResponse(this Booking booking)
     {
-        return new BookingResponse()
+        return new BookingResponse
         {
             Id = booking.Id,
             StartDate = booking.StartDate,

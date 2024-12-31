@@ -1,6 +1,6 @@
-﻿namespace Hotel_IntegrationTests
+﻿namespace Hotel_ServiceTests
 {
-    public class CabinServiceTest
+    public class SettingServiceTest
     {
         [Fact]
         public void Test1()
