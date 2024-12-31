@@ -110,15 +110,6 @@ namespace Hotel_Infrastructure.Repositories
 
             return booking;
         }
-        
-        private static IQueryable<Booking> ApplyFilters(IQueryable<Booking> query, string? status)
-        {
-            if (!string.IsNullOrEmpty(status))
-            {
-                query = query.Where(b => b.Status == status);
-            }
-            return query;
-        }
 
         private IQueryable<Booking> ApplySorting(IQueryable<Booking> query, string? sortBy, string? sortDirection)
         {
