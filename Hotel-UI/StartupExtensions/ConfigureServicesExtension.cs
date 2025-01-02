@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using ContactsManager.Core.Domain.IdentityEntities;
+using Hotel_Core.ServiceContracts;
+using Hotel_Core.Services;
 using Hotel_Infrastructure.DbContext;
 using Hotel_Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -29,8 +31,15 @@ namespace Hotel_UI
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
    services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
-   services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
-
+   services.AddScoped<BookingsUpdaterService>();
+   services.AddScoped<IUnitOfWork, UnitOfWork>();
+   services.AddScoped<IBookingsUpdaterService>(provider =>
+   {
+    var unitOfWork = provider.GetRequiredService<IUnitOfWork>();
+    var originalService = provider.GetRequiredService<BookingsUpdaterService>();
+    return TransactionDecorator<IBookingsUpdaterService>.Create(originalService, unitOfWork);
+   });
+   
    services.AddScoped<ICabinsRepository, CabinsRepository>();
    services.AddScoped<ICabinsGetterService, CabinsGetterService>();
    services.AddScoped<ICabinsDeleterService, CabinsDeleterService>();

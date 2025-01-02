@@ -20,8 +20,6 @@ public interface IBookingsRepository
 
     Task<Booking> UpdateBooking(Booking booking);
 
-    Task<IDbContextTransaction> BeginTransactionAsync();
-
     Task<List<Booking>> GetStaysAfterDate(DateTime date);
 
     Task<List<Booking>> GetStaysTodayActivity();
