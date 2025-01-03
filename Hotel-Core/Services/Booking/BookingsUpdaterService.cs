@@ -24,17 +24,34 @@ namespace Services
             if (patchDoc == null)
                 throw new ArgumentNullException(nameof(patchDoc));
 
-            var booking = await _bookingsRepository.GetBookingByBookingId(bookingId);
-            if (booking == null)
-                throw new ArgumentException("Booking ID does not exist");
+            var matchingBooking = await _bookingsRepository.GetBookingByBookingId(bookingId);
+            if (matchingBooking == null)
+                throw new ArgumentException("Given Booking id doesn't exist");
 
-            patchDoc.ApplyTo(booking);
+            patchDoc.ApplyTo(matchingBooking);
 
-            if (!IsValidBooking(booking))
-                throw new InvalidOperationException("Invalid booking data");
+            if (!IsValidBooking(matchingBooking))
+                throw new InvalidOperationException("Booking is invalid after patch application");
 
-            await _bookingsRepository.UpdateBooking(booking);
-            return booking.ToBookingResponse();
+            await using var transaction = await _bookingsRepository.BeginTransactionAsync();
+            try
+            {
+                await _bookingsRepository.UpdateBooking(matchingBooking);
+
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync();
+                throw new DbUpdateConcurrencyException("Booking has been modified by another user.");
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
+            return matchingBooking.ToBookingResponse();
         }
 
         private bool IsValidBooking(Booking booking)
