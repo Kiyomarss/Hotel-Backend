@@ -1,14 +1,12 @@
-﻿using System.Text;
-using ContactsManager.Core.Domain.IdentityEntities;
+﻿using ContactsManager.Core.Domain.IdentityEntities;
+using Hotel_Core.ServiceContracts;
+using Hotel_Core.Services;
 using Hotel_Infrastructure.DbContext;
 using Hotel_Infrastructure.Repositories;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
 using Repositories;
 using RepositoryContracts;
@@ -25,6 +23,8 @@ namespace Hotel_UI
    
    //add services into IoC container
    services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+   
+   services.AddScoped<IUnitOfWork, UnitOfWork>();
    
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();

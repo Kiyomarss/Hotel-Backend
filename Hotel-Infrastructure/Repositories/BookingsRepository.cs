@@ -104,11 +104,9 @@ namespace Hotel_Infrastructure.Repositories
                 .ToListAsync();
         }
         
-        public async Task<Booking> UpdateBooking(Booking booking)
+        public Task<Booking> UpdateBooking(Booking booking)
         {
-            await _db.SaveChangesAsync();
-
-            return booking;
+            return Task.FromResult(booking);
         }
 
         private IQueryable<Booking> ApplySorting(IQueryable<Booking> query, string? sortBy, string? sortDirection)

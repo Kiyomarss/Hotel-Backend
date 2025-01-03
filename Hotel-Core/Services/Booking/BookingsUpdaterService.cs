@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Hotel_Core.Domain.Entities;
 using Hotel_Core.DTO;
-using Microsoft.EntityFrameworkCore;
+using Hotel_Core.ServiceContracts;
 using ServiceContracts;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
@@ -11,11 +11,16 @@ namespace Services
     public class BookingsUpdaterService : IBookingsUpdaterService
     {
         private readonly IBookingsRepository _bookingsRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<BookingsUpdaterService> _logger;
 
-        public BookingsUpdaterService(IBookingsRepository bookingsRepository, ILogger<BookingsUpdaterService> logger)
+        public BookingsUpdaterService(
+            IBookingsRepository bookingsRepository,
+            IUnitOfWork unitOfWork,
+            ILogger<BookingsUpdaterService> logger)
         {
             _bookingsRepository = bookingsRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -26,32 +31,27 @@ namespace Services
 
             var matchingBooking = await _bookingsRepository.GetBookingByBookingId(bookingId);
             if (matchingBooking == null)
-                throw new ArgumentException("Given Booking id doesn't exist");
+                throw new ArgumentException("Booking ID does not exist");
 
             patchDoc.ApplyTo(matchingBooking);
 
             if (!IsValidBooking(matchingBooking))
-                throw new InvalidOperationException("Booking is invalid after patch application");
+                throw new InvalidOperationException("Invalid booking data");
 
-            await using var transaction = await _bookingsRepository.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _bookingsRepository.UpdateBooking(matchingBooking);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
-                await transaction.CommitAsync();
+                return matchingBooking.ToBookingResponse();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                throw new DbUpdateConcurrencyException("Booking has been modified by another user.");
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError($"Error updating booking: {ex.Message}");
                 throw;
             }
-
-            return matchingBooking.ToBookingResponse();
         }
 
         private bool IsValidBooking(Booking booking)
