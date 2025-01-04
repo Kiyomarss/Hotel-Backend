@@ -38,14 +38,15 @@ namespace Services
             if (!IsValidBooking(matchingBooking))
                 throw new InvalidOperationException("Invalid booking data");
 
+            Booking updatedBooking;
+            
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var updatedBooking = await _bookingsRepository.UpdateBooking(matchingBooking);
+                updatedBooking = await _bookingsRepository.UpdateBooking(matchingBooking);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return updatedBooking.ToBookingResponse();
             }
             catch (Exception ex)
             {
@@ -53,6 +54,8 @@ namespace Services
                 _logger.LogError($"Error updating booking: {ex.Message}");
                 throw;
             }
+
+            return updatedBooking.ToBookingResponse();
         }
 
         private bool IsValidBooking(Booking booking)

@@ -15,12 +15,11 @@ namespace Hotel_Infrastructure.Repositories
             _db = db;
         }
 
-        public async Task<Booking> AddBooking(Booking booking)
+        public Task<Booking> AddBooking(Booking booking)
         {
             _db.Set<Booking>().Add(booking);
-            await _db.SaveChangesAsync();
 
-            return booking;
+            return Task.FromResult(booking);
         }
         
         public async Task<Booking?> GetBookingByBookingId(Guid bookingId)

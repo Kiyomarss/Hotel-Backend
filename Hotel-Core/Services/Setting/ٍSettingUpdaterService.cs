@@ -1,21 +1,25 @@
-﻿using ContactsManager.Core.DTO;
-using Entities;
+﻿using Entities;
 using Hotel_Core.DTO;
+using Hotel_Core.ServiceContracts;
 using ServiceContracts;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace Services
 {
  public class SettingUpdaterService : ISettingUpdaterService
  {
   private readonly ISettingRepository _settingRepository;
+  private readonly IUnitOfWork _unitOfWork;
   private readonly ILogger<SettingGetterService> _logger;
 
-  public SettingUpdaterService(ISettingRepository settingRepository, ILogger<SettingGetterService> logger)
+  public SettingUpdaterService(
+   ISettingRepository settingRepository,
+   IUnitOfWork unitOfWork,
+   ILogger<SettingGetterService> logger)
   {
    _settingRepository = settingRepository;
+   _unitOfWork = unitOfWork;
    _logger = logger;
   }
 
@@ -24,8 +28,23 @@ namespace Services
    if (settingUpdateRequest == null)
     throw new ArgumentNullException(nameof(settingUpdateRequest));
 
-   var savedSetting = await _settingRepository.UpdateSetting(settingUpdateRequest.ToSetting());
-
+   Setting savedSetting;
+   
+   await _unitOfWork.BeginTransactionAsync();
+   try
+   {
+    savedSetting = await _settingRepository.UpdateSetting(settingUpdateRequest.ToSetting());
+    await _unitOfWork.SaveChangesAsync();
+    await _unitOfWork.CommitTransactionAsync();
+   }
+   catch (Exception ex)
+   {
+    await _unitOfWork.RollbackTransactionAsync();
+    _logger.LogError($"Error Updating setting: {ex.Message}");
+    
+    throw;
+   }
+   
    return savedSetting.ToSettingResponse();
   }
  }

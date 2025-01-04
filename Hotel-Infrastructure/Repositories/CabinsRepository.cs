@@ -19,7 +19,6 @@ namespace Repositories
         public async Task<Cabin> AddCabin(Cabin cabin)
         {
             await _db.Set<Cabin>().AddAsync(cabin);
-            await _db.SaveChangesAsync();
 
             return cabin;
         }
@@ -57,9 +56,7 @@ namespace Repositories
             matchingCabin.Discount = cabinUpdateRequest.Discount;
             matchingCabin.ImagePath = cabinUpdateRequest.ImagePath;
             matchingCabin.Description = cabinUpdateRequest.Description;
-
-            await _db.SaveChangesAsync();
-
+            
             return matchingCabin;
         }
     }

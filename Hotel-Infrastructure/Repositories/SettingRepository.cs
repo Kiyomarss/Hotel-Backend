@@ -28,9 +28,7 @@ namespace Repositories
             matchingSetting.MaxBookingLength = setting.MaxBookingLength;
             matchingSetting.MaxGuestsPerBooking = setting.MaxGuestsPerBooking;
             matchingSetting.BreakfastPrice = setting.BreakfastPrice;
-
-            await _db.SaveChangesAsync();
-
+            
             return matchingSetting;
         }
     }
