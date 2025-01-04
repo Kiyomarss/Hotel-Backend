@@ -1,8 +1,6 @@
 using System.Linq.Expressions;
-using Entities;
 using Hotel_Core.Domain.Entities;
 using Hotel_Core.DTO;
-using Hotel_Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using RepositoryContracts;
 
@@ -39,11 +37,13 @@ namespace Hotel_Infrastructure.Repositories
         {
             return await _db.Set<Booking>().FindAsync(bookingId);
         }
-        
-        public async Task<bool> DeleteBooking(Booking booking)
+
+        public async Task<bool> DeleteBooking(Guid bookingId)
         {
-            _db.Set<Booking>().Remove(booking);
-            var rowsDeleted = await _db.SaveChangesAsync();
+            var rowsDeleted = await _db.Set<Booking>()
+                                       .Where(b => b.Id == bookingId)
+                                       .ExecuteDeleteAsync();
+
             return rowsDeleted > 0;
         }
         
@@ -103,12 +103,14 @@ namespace Hotel_Infrastructure.Repositories
                 .OrderBy(b => b.CreateAt)
                 .ToListAsync();
         }
-        
+
         public Task<Booking> UpdateBooking(Booking booking)
         {
+            _db.Set<Booking>().Update(booking);
+
             return Task.FromResult(booking);
         }
-
+        
         private IQueryable<Booking> ApplySorting(IQueryable<Booking> query, string? sortBy, string? sortDirection)
         {
             if (string.IsNullOrEmpty(sortBy)) return query;

@@ -11,10 +11,5 @@ namespace Hotel_Infrastructure.Repositories
         {
             _db = db;
         }
-
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
-        {
-            return await _db.Database.BeginTransactionAsync();
-        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Entities;
-using Hotel_Core.Domain.Entities;
+﻿using Hotel_Core.ServiceContracts;
 using ServiceContracts;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
@@ -11,22 +10,37 @@ namespace Services
  {
   //private field
   private readonly IBookingsRepository _bookingsRepository;
+  private readonly IUnitOfWork _unitOfWork;
   private readonly ILogger<BookingsGetterService> _logger;
 
   //constructor
-  public BookingsDeleterService(IBookingsRepository bookingsRepository, ILogger<BookingsGetterService> logger)
+  public BookingsDeleterService(IBookingsRepository bookingsRepository, IUnitOfWork unitOfWork, ILogger<BookingsGetterService> logger)
   {
    _bookingsRepository = bookingsRepository;
+   _unitOfWork = unitOfWork;
    _logger = logger;
   }
 
   public async Task<bool> DeleteBooking(Guid bookingId)
   {
-   var booking = await _bookingsRepository.FindBookingById(bookingId);
-   if (booking == null)
-    throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
+    var booking = await _bookingsRepository.FindBookingById(bookingId);
+    if (booking == null)
+     throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
 
-   return await _bookingsRepository.DeleteBooking(booking);
+    await _unitOfWork.BeginTransactionAsync();
+    try
+    {
+     var result = await _bookingsRepository.DeleteBooking(bookingId);
+     await _unitOfWork.CommitTransactionAsync();
+
+     return result;
+    }
+    catch
+    {
+     await _unitOfWork.RollbackTransactionAsync();
+
+     throw;
+    }
   }
  }
 }

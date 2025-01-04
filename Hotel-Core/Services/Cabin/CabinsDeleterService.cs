@@ -1,4 +1,4 @@
-﻿using Entities;
+﻿using Hotel_Core.ServiceContracts;
 using ServiceContracts;
 using RepositoryContracts;
 using Microsoft.Extensions.Logging;
@@ -10,18 +10,37 @@ namespace Services
  {
   //private field
   private readonly ICabinsRepository _cabinsRepository;
+  private readonly IUnitOfWork _unitOfWork;
   private readonly ILogger<CabinsGetterService> _logger;
 
   //constructor
-  public CabinsDeleterService(ICabinsRepository cabinsRepository, ILogger<CabinsGetterService> logger)
+  public CabinsDeleterService(ICabinsRepository cabinsRepository, IUnitOfWork unitOfWork, ILogger<CabinsGetterService> logger)
   {
    _cabinsRepository = cabinsRepository;
+   _unitOfWork = unitOfWork;
    _logger = logger;
   }
   
   public async Task<bool> DeleteCabin(Guid cabinId)
   {
-   return await _cabinsRepository.DeleteCabinByCabinId(cabinId);
+   var cabin = await _cabinsRepository.FindCabinById(cabinId);
+   if (cabin == null)
+    throw new KeyNotFoundException($"cabin with ID {cabinId} does not exist.");
+
+   await _unitOfWork.BeginTransactionAsync();
+   try
+   {
+    var result = await _cabinsRepository.DeleteCabin(cabinId);
+    await _unitOfWork.CommitTransactionAsync();
+
+    return result;
+   }
+   catch
+   {
+    await _unitOfWork.RollbackTransactionAsync();
+
+    throw;
+   }
   }
  }
 }

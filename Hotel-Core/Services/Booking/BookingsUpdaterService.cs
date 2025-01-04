@@ -41,10 +41,11 @@ namespace Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var updatedBooking = await _bookingsRepository.UpdateBooking(matchingBooking);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return matchingBooking.ToBookingResponse();
+                return updatedBooking.ToBookingResponse();
             }
             catch (Exception ex)
             {

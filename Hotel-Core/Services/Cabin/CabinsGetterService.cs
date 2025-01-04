@@ -19,12 +19,9 @@ namespace Services
    _logger = logger;
   }
   
-  public virtual async Task<CabinResponse?> GetCabinByCabinId(Guid? cabinId)
+  public virtual async Task<CabinResponse?> GetCabinByCabinId(Guid cabinId)
   {
-   if (cabinId == null)
-    return null;
-
-   var cabin = await _cabinsRepository.GetCabinByCabinId(cabinId.Value);
+   var cabin = await _cabinsRepository.FindCabinById(cabinId);
 
    return cabin?.ToCabinResponse();
   }

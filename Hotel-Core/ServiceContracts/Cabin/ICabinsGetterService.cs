@@ -5,6 +5,7 @@ namespace ServiceContracts;
 
 public interface ICabinsGetterService
 {
-    Task<CabinResponse?> GetCabinByCabinId(Guid? cabinId);
+    Task<CabinResponse?> GetCabinByCabinId(Guid cabinId);
+    
     Task<List<CabinResponse>> GetCabins();
 }

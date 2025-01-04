@@ -28,20 +28,17 @@ namespace Repositories
         {
             return await _db.Set<Cabin>().ToListAsync();
         }
-
-        public async Task<Cabin?> GetCabinByCabinId(Guid cabinId)
+        
+        public async Task<Cabin?> FindCabinById(Guid cabinId)
         {
             return await _db.Set<Cabin>().FindAsync(cabinId);
         }
-        
-        public async Task<bool> DeleteCabinByCabinId(Guid cabinId)
+
+        public async Task<bool> DeleteCabin(Guid cabinId)
         {
-            var cabin = await _db.Set<Cabin>().FindAsync(cabinId);
-            if (cabin == null)
-                throw new InvalidOperationException("Cabin with the given ID does not exist.");
-            
-            _db.Set<Cabin>().Remove(cabin);
-            var rowsDeleted = await _db.SaveChangesAsync();
+            var rowsDeleted = await _db.Set<Cabin>()
+                                       .Where(b => b.Id == cabinId)
+                                       .ExecuteDeleteAsync();
 
             return rowsDeleted > 0;
         }

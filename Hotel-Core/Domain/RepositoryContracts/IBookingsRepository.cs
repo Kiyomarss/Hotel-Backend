@@ -16,12 +16,11 @@ public interface IBookingsRepository
     Task<PaginatedResult<Booking>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
 
     Task<List<Booking>> GetBookingsAfterDate(DateTime date);
-    Task<bool> DeleteBooking(Booking booking);
+    
+    Task<bool> DeleteBooking(Guid bookingId);
 
     Task<Booking> UpdateBooking(Booking booking);
-
-    Task<IDbContextTransaction> BeginTransactionAsync();
-
+    
     Task<List<Booking>> GetStaysAfterDate(DateTime date);
 
     Task<List<Booking>> GetStaysTodayActivity();
