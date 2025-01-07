@@ -1,4 +1,5 @@
 ﻿using ContactsManager.Core.Domain.IdentityEntities;
+using Hotel_Core.RabbitMQ;
 using Hotel_Core.ServiceContracts;
 using Hotel_Core.Services;
 using Hotel_Infrastructure.DbContext;
@@ -30,6 +31,10 @@ namespace Hotel_UI
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
    services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
    services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
+   services.AddHostedService<RabbitMqConsumerWorker>();
+   services.AddScoped<RabbitMqProducer>();
+   services.AddScoped<DeleteBookingConsumer>();
+   services.AddHostedService<DeleteBookingWorker>();
 
    services.AddScoped<ICabinsRepository, CabinsRepository>();
    services.AddScoped<ICabinsGetterService, CabinsGetterService>();

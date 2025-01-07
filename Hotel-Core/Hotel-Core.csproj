@@ -17,6 +17,7 @@
       <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="9.0.0" />
+      <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
       <PackageReference Include="Serilog" Version="4.1.0" />
     </ItemGroup>
 

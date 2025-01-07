@@ -1,48 +1,34 @@
-﻿using Hotel_Core.ServiceContracts;
+﻿using Hotel_Core.RabbitMQ;
+using Newtonsoft.Json;
 using ServiceContracts;
-using RepositoryContracts;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace Services
 {
- public class BookingsDeleterService : IBookingsDeleterService
- {
-  //private field
-  private readonly IBookingsRepository _bookingsRepository;
-  private readonly IUnitOfWork _unitOfWork;
-  private readonly ILogger<BookingsGetterService> _logger;
-
-  //constructor
-  public BookingsDeleterService(IBookingsRepository bookingsRepository, IUnitOfWork unitOfWork, ILogger<BookingsGetterService> logger)
-  {
-   _bookingsRepository = bookingsRepository;
-   _unitOfWork = unitOfWork;
-   _logger = logger;
-  }
-
-  public async Task<bool> DeleteBooking(Guid bookingId)
-  {
-    var booking = await _bookingsRepository.FindBookingById(bookingId);
-    if (booking == null)
-     throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
-
-    bool result;
-    
-    await _unitOfWork.BeginTransactionAsync();
-    try
+    public class BookingsDeleterService : IBookingsDeleterService
     {
-     result = await _bookingsRepository.DeleteBooking(bookingId);
-     await _unitOfWork.CommitTransactionAsync();
-    }
-    catch
-    {
-     await _unitOfWork.RollbackTransactionAsync();
+        private readonly RabbitMqProducer _rabbitMqProducer;
 
-     throw;
+        public BookingsDeleterService(RabbitMqProducer rabbitMqProducer)
+        {
+            _rabbitMqProducer = rabbitMqProducer;
+        }
+
+        public async Task<bool> InitiateDeleteBooking(Guid bookingId)
+        {
+            if (bookingId == Guid.Empty)
+                throw new ArgumentException("Invalid booking ID");
+
+            // ایجاد پیام
+            var deleteMessage = new
+            {
+                BookingId = bookingId
+            };
+
+            // ارسال پیام به صف
+            var messageJson = JsonConvert.SerializeObject(deleteMessage);
+            _rabbitMqProducer.SendMessageToQueue(messageJson, "DeleteBookingQueue");
+
+            return true; // پیام ارسال شد
+        }
     }
-    
-    return result;    
-  }
- }
 }
