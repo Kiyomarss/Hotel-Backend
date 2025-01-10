@@ -1,35 +1,41 @@
 using RabbitMQ.Client;
 using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace Hotel_Core.RabbitMQ;
 
 public class RabbitMqProducer
 {
-    private readonly string _hostname = "localhost";
+    private readonly RabbitMqOptions _options;
+
+    public RabbitMqProducer(IOptions<RabbitMqOptions> options)
+    {
+        _options = options.Value;
+    }
 
     public void SendMessageToQueue(string message, string queueName)
     {
-        var factory = new ConnectionFactory() { HostName = _hostname };
-
-        using (var connection = factory.CreateConnection())
-        using (var channel = connection.CreateModel())
+        var factory = new ConnectionFactory()
         {
-            // اطمینان از وجود صف مورد نظر
-            channel.QueueDeclare(queue: queueName,
-                                 durable: false,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+            HostName = _options.Hostname
+        };
 
-            var body = Encoding.UTF8.GetBytes(message);
+        using var connection = factory.CreateConnection();
+        using var channel = connection.CreateModel();
 
-            // ارسال پیام به صف مشخص‌شده
-            channel.BasicPublish(exchange: "",
-                                 routingKey: queueName,
-                                 basicProperties: null,
-                                 body: body);
+        channel.QueueDeclare(queue: queueName,
+                             durable: true,
+                             exclusive: false,
+                             autoDelete: false,
+                             arguments: null);
 
-            Console.WriteLine($"Message sent to queue '{queueName}': {message}");
-        }
+        var body = Encoding.UTF8.GetBytes(message);
+
+        channel.BasicPublish(exchange: "",
+                             routingKey: queueName,
+                             basicProperties: null,
+                             body: body);
+
+        Console.WriteLine($"Message sent to queue '{queueName}': {message}");
     }
 }

@@ -4,6 +4,7 @@ using System.Text;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+
 namespace Services;
 
 public class DeleteBookingConsumer
@@ -19,54 +20,54 @@ public class DeleteBookingConsumer
 
     public void ReceiveMessagesFromQueue(string queueName)
     {
-        var factory = new ConnectionFactory() { HostName = "localhost" };
-        using (var connection = factory.CreateConnection())
-        using (var channel = connection.CreateModel())
+        var factory = new ConnectionFactory()
         {
-            channel.QueueDeclare(queue: queueName,
-                                 durable: false,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+            HostName = "localhost"
+        };
+        using var connection = factory.CreateConnection();
+        using var channel = connection.CreateModel();
 
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += async (model, ea) =>
+        channel.QueueDeclare(queue: queueName,
+                             durable: true,
+                             exclusive: false,
+                             autoDelete: false,
+                             arguments: null);
+
+        var consumer = new EventingBasicConsumer(channel);
+        consumer.Received += async (model, ea) =>
+        {
+            var body = ea.Body.ToArray();
+            var messageJson = Encoding.UTF8.GetString(body);
+
+            try
             {
-                var body = ea.Body.ToArray();
-                var messageJson = Encoding.UTF8.GetString(body);
+                var deleteMessage = JsonConvert.DeserializeObject<dynamic>(messageJson);
+                Guid bookingId = deleteMessage.BookingId;
 
-                try
+                await _unitOfWork.BeginTransactionAsync();
+                var booking = await _bookingsRepository.FindBookingById(bookingId);
+                if (booking == null)
                 {
-                    // دریافت پیام و تبدیل به شیء
-                    var deleteMessage = JsonConvert.DeserializeObject<dynamic>(messageJson);
-                    Guid bookingId = deleteMessage.BookingId;
-
-                    // اجرای تراکنش حذف
-                    await _unitOfWork.BeginTransactionAsync();
-                    var booking = await _bookingsRepository.FindBookingById(bookingId);
-                    if (booking == null)
-                    {
-                        throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
-                    }
-
-                    await _bookingsRepository.DeleteBooking(bookingId);
-                    await _unitOfWork.CommitTransactionAsync();
-
-                    Console.WriteLine($"Booking with ID {bookingId} deleted successfully.");
+                    throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
                 }
-                catch (Exception ex)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    Console.WriteLine($"Error while deleting booking: {ex.Message}");
-                }
-            };
 
-            channel.BasicConsume(queue: queueName,
-                                 autoAck: true,
-                                 consumer: consumer);
+                await _bookingsRepository.DeleteBooking(bookingId);
+                await _unitOfWork.CommitTransactionAsync();
 
-            Console.WriteLine($"Listening for {queueName}...");
-            Console.ReadLine();
-        }
+                Console.WriteLine($"Booking with ID {bookingId} deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                Console.WriteLine($"Error while deleting booking: {ex.Message}");
+            }
+        };
+
+        channel.BasicConsume(queue: queueName,
+                             autoAck: true,
+                             consumer: consumer);
+
+        Console.WriteLine($"Listening for {queueName}...");
+        Console.ReadLine();
     }
 }

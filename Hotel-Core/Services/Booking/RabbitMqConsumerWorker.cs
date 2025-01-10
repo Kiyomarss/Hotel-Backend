@@ -1,22 +1,31 @@
 using Hotel_Core.RabbitMQ;
-
-namespace Services;
-
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class RabbitMqConsumerWorker : BackgroundService
+namespace Services
 {
-    private readonly RabbitMqConsumer _rabbitMqConsumer;
-
-    public RabbitMqConsumerWorker()
+    public class RabbitMqConsumerWorker : BackgroundService
     {
-        _rabbitMqConsumer = new RabbitMqConsumer();
-    }
+        private readonly RabbitMqConsumer _rabbitMqConsumer;
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        return Task.Run(() => _rabbitMqConsumer.ReceiveMessagesFromQueue(), stoppingToken);
+        public RabbitMqConsumerWorker(RabbitMqConsumer rabbitMqConsumer)
+        {
+            _rabbitMqConsumer = rabbitMqConsumer;
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            // تعریف تابع پردازش پیام
+            Action<string> processMessage = message =>
+            {
+                Console.WriteLine($"Processed message: {message}");
+                // اینجا می‌توانید منطق پردازش پیام خود را اضافه کنید
+            };
+
+            // ارسال تابع پردازش به متد
+            return Task.Run(() => _rabbitMqConsumer.ReceiveMessagesFromQueue(processMessage), stoppingToken);
+        }
     }
 }

@@ -1,12 +1,14 @@
 using System.Configuration;
 using System.Text;
 using Entities;
+using Hotel_Core.RabbitMQ;
 using Hotel_Infrastructure.DbContext;
 using Hotel_UI;
 using Hotel_UI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
@@ -53,6 +55,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMQ"));
 
 var app = builder.Build();
 

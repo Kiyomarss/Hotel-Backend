@@ -2,41 +2,48 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace Hotel_Core.RabbitMQ;
 
 public class RabbitMqConsumer
 {
-    private readonly string _hostname = "localhost"; // یا آدرس RabbitMQ
-    private readonly string _queueName = "testQueue";
-    
-    public void ReceiveMessagesFromQueue()
+    private readonly RabbitMqOptions _options;
+
+    public RabbitMqConsumer(IOptions<RabbitMqOptions> options)
     {
-        var factory = new ConnectionFactory() { HostName = _hostname };
-        using (var connection = factory.CreateConnection())
-        using (var channel = connection.CreateModel())
+        _options = options.Value;
+    }
+
+    public void ReceiveMessagesFromQueue(Action<string> processMessage)
+    {
+        var factory = new ConnectionFactory()
         {
-            channel.QueueDeclare(queue: _queueName,
-                                 durable: true,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+            HostName = _options.Hostname
+        };
 
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, ea) =>
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine("Received message: " + message);
-                // پردازش پیام
-            };
+        using var connection = factory.CreateConnection();
+        using var channel = connection.CreateModel();
 
-            channel.BasicConsume(queue: _queueName,
-                                 autoAck: true,
-                                 consumer: consumer);
+        channel.QueueDeclare(queue: _options.QueueName,
+                             durable: true,
+                             exclusive: false,
+                             autoDelete: false,
+                             arguments: null);
 
-            Console.WriteLine("Press [enter] to exit.");
-            Console.ReadLine();
-        }
+        var consumer = new EventingBasicConsumer(channel);
+        consumer.Received += (model, ea) =>
+        {
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            processMessage(message);
+        };
+
+        channel.BasicConsume(queue: _options.QueueName,
+                             autoAck: true,
+                             consumer: consumer);
+
+        Console.WriteLine("Listening for messages. Press [enter] to exit.");
+        Console.ReadLine();
     }
 }

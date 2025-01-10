@@ -32,7 +32,8 @@ namespace Hotel_UI
    services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
    services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
    services.AddHostedService<RabbitMqConsumerWorker>();
-   services.AddScoped<RabbitMqProducer>();
+   services.AddTransient<RabbitMqProducer>();
+   services.AddTransient<RabbitMqConsumer>();   
    services.AddScoped<DeleteBookingConsumer>();
    services.AddHostedService<DeleteBookingWorker>();
 

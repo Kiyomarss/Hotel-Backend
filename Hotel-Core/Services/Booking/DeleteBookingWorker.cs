@@ -16,11 +16,9 @@ public class DeleteBookingWorker : BackgroundService
     {
         return Task.Run(() =>
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
-            {
-                var deleteBookingConsumer = scope.ServiceProvider.GetRequiredService<DeleteBookingConsumer>();
-                deleteBookingConsumer.ReceiveMessagesFromQueue("DeleteBookingQueue");
-            }
+            using var scope = _serviceScopeFactory.CreateScope();
+            var deleteBookingConsumer = scope.ServiceProvider.GetRequiredService<DeleteBookingConsumer>();
+            deleteBookingConsumer.ReceiveMessagesFromQueue("DeleteBookingQueue");
         }, stoppingToken);
     }
 }
