@@ -12,13 +12,11 @@ public class DeleteBookingWorker : BackgroundService
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        return Task.Run(() =>
-        {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var deleteBookingConsumer = scope.ServiceProvider.GetRequiredService<DeleteBookingConsumer>();
-            deleteBookingConsumer.ReceiveMessagesFromQueue("DeleteBookingQueue");
-        }, stoppingToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var deleteBookingConsumer = scope.ServiceProvider.GetRequiredService<DeleteBookingConsumer>();
+        
+        await deleteBookingConsumer.ReceiveMessagesFromQueue("DeleteBookingQueue", stoppingToken);
     }
 }

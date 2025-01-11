@@ -1,6 +1,6 @@
 namespace Hotel_Core.ServiceContracts;
 
-public interface IUnitOfWork : IDisposable
+public interface IUnitOfWork
 {
     Task BeginTransactionAsync();
     

@@ -47,18 +47,4 @@ public class UnitOfWork : IUnitOfWork
     {
         return await _db.SaveChangesAsync();
     }
-
-    public void Dispose()
-    {
-        try
-        {
-            _transaction?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error disposing transaction: {ex.Message}");
-        }
-    
-        _db.Dispose();
-    }
 }
