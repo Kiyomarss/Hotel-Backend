@@ -22,28 +22,32 @@ public class RabbitMqConsumer
             HostName = _options.Hostname
         };
 
-        using var connection = factory.CreateConnection();
-        using var channel = connection.CreateModel();
-
-        channel.QueueDeclare(queue: _options.QueueName,
-                             durable: true,
-                             exclusive: false,
-                             autoDelete: false,
-                             arguments: null);
-
-        var consumer = new EventingBasicConsumer(channel);
-        consumer.Received += (model, ea) =>
+        try
         {
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-            processMessage(message);
-        };
+            using var connection = factory.CreateConnection();
+            using var channel = connection.CreateModel();
+            Console.WriteLine("Connected to RabbitMQ");
 
-        channel.BasicConsume(queue: _options.QueueName,
-                             autoAck: true,
-                             consumer: consumer);
+            channel.QueueDeclare(queue: _options.QueueName,
+                                 durable: true,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
 
-        Console.WriteLine("Listening for messages. Press [enter] to exit.");
-        Console.ReadLine();
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                processMessage(message);
+            };
+
+            Console.WriteLine("Listening for messages. Press [enter] to exit.");
+            Console.ReadLine();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error connecting to RabbitMQ: {ex.Message}");
+        }
     }
 }

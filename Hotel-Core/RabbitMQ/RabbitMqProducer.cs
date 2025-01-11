@@ -20,22 +20,30 @@ public class RabbitMqProducer
             HostName = _options.Hostname
         };
 
-        using var connection = factory.CreateConnection();
-        using var channel = connection.CreateModel();
+        try
+        {
+            using var connection = factory.CreateConnection();
+            using var channel = connection.CreateModel();
 
-        channel.QueueDeclare(queue: queueName,
-                             durable: true,
-                             exclusive: false,
-                             autoDelete: false,
-                             arguments: null);
+            // اطمینان از اینکه صف در صورت وجود ندارد، ایجاد شود
+            channel.QueueDeclare(queue: queueName,
+                                 durable: true,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
 
-        var body = Encoding.UTF8.GetBytes(message);
+            var body = Encoding.UTF8.GetBytes(message);
 
-        channel.BasicPublish(exchange: "",
-                             routingKey: queueName,
-                             basicProperties: null,
-                             body: body);
+            channel.BasicPublish(exchange: "",
+                                 routingKey: queueName,
+                                 basicProperties: null,
+                                 body: body);
 
-        Console.WriteLine($"Message sent to queue '{queueName}': {message}");
+            Console.WriteLine($"Message sent to queue '{queueName}': {message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending message to RabbitMQ: {ex.Message}");
+        }
     }
 }

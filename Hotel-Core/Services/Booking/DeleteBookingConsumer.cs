@@ -53,7 +53,7 @@ public class DeleteBookingConsumer
 
                 await _bookingsRepository.DeleteBooking(bookingId);
                 await _unitOfWork.CommitTransactionAsync();
-
+                channel.BasicAck(ea.DeliveryTag, multiple: false);
                 Console.WriteLine($"Booking with ID {bookingId} deleted successfully.");
             }
             catch (Exception ex)
@@ -64,7 +64,7 @@ public class DeleteBookingConsumer
         };
 
         channel.BasicConsume(queue: queueName,
-                             autoAck: true,
+                             autoAck: false,
                              consumer: consumer);
 
         Console.WriteLine($"Listening for {queueName}...");

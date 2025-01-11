@@ -18,7 +18,7 @@ namespace Hotel_Core.Services.RabbitMQ
             {
                 // اعلام صف در صورت عدم وجود آن
                 channel.QueueDeclare(queue: _queueName,
-                                     durable: false,
+                                     durable: true,
                                      exclusive: false,
                                      autoDelete: false,
                                      arguments: null);
