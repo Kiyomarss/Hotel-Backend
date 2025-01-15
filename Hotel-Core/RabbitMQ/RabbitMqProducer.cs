@@ -6,18 +6,11 @@ namespace Hotel_Core.RabbitMQ;
 
 public class RabbitMqProducer
 {
-    private readonly RabbitMqOptions _options;
-
-    public RabbitMqProducer(IOptions<RabbitMqOptions> options)
-    {
-        _options = options.Value;
-    }
-
     public void SendMessageToQueue(string message, string queueName)
     {
         var factory = new ConnectionFactory()
         {
-            HostName = _options.Hostname
+            HostName = Constant.Constant.RabbitMq.Hostname
         };
 
         try
