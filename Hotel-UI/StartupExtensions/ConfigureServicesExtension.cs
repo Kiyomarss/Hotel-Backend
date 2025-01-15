@@ -28,9 +28,7 @@ namespace Hotel_UI
    services.AddScoped<IUnitOfWork, UnitOfWork>();
    
    services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMQ"));
-   services.AddHostedService<RabbitMqConsumerWorker>();
    services.AddTransient<RabbitMqProducer>();
-   services.AddTransient<RabbitMqConsumer>();
    
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
