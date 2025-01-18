@@ -9,10 +9,18 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
+using RawRabbit.Configuration;
+using RawRabbit;
+using RawRabbit.DependencyInjection.ServiceCollection;
+using RawRabbit.Instantiation;
 using Repositories;
 using RepositoryContracts;
 using ServiceContracts;
 using Services;
+using Microsoft.Extensions.DependencyInjection;
+using RawRabbit.DependencyInjection;
+using IDependencyResolver = RawRabbit.DependencyInjection.IDependencyResolver;
+
 
 namespace Hotel_UI
 {
@@ -28,14 +36,31 @@ namespace Hotel_UI
    services.AddScoped<IUnitOfWork, UnitOfWork>();
    
    //services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMQ"));
-   services.AddTransient<RabbitMqProducer>();
+   //services.AddTransient<RabbitMqProducer>();
    
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
    services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
-   services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
    services.AddScoped<DeleteBookingConsumer>();
    services.AddHostedService<DeleteBookingWorker>();
+   
+   //services.AddSingleton<ILogger<BookingsUpdaterService>>();
+
+   services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
+   services.AddScoped<UpdateBookingConsumer>();
+   services.AddHostedService<UpdateBookingWorker>();
+   
+   services.AddSingleton<RabbitMqProducer>();
+
+   services.AddRawRabbit(new RawRabbitOptions
+   {
+    ClientConfiguration = configuration.GetSection("RawRabbit").Get<RawRabbit.Configuration.RawRabbitConfiguration>(),
+    DependencyInjection = ioc =>
+    {
+     ioc.AddSingleton<IBookingsUpdaterService, BookingsUpdaterService>(resolver => new BookingsUpdaterService(resolver.GetService<RabbitMqProducer>(), resolver.GetService<ILogger<BookingsUpdaterService>>()));
+     ioc.AddSingleton<UpdateBookingConsumer>(resolver => { var scopeFactory = resolver.GetService<IServiceScopeFactory>(); return new UpdateBookingConsumer(scopeFactory); });
+    }
+   });
 
    services.AddScoped<ICabinsRepository, CabinsRepository>();
    services.AddScoped<ICabinsGetterService, CabinsGetterService>();

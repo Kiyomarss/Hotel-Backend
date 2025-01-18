@@ -58,7 +58,7 @@ public class BookingsController  : Controller
     [Route("[action]/{id}")]
     public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
     {
-        var updatedBooking = await _bookingsUpdaterService.UpdateBooking(id, patchDoc);
+        var updatedBooking = await _bookingsUpdaterService.InitiateUpdateBooking(id, patchDoc);
         return Ok(new
         {
             Message = "Booking updated successfully",

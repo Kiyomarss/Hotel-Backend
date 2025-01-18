@@ -1,6 +1,7 @@
 using Hotel_Core.ServiceContracts;
 using RepositoryContracts;
 using System.Text;
+using Hotel_Core.Constant;
 using Hotel_Core.Services.Base;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -22,7 +23,7 @@ public class DeleteBookingConsumer : DisposableBase
 
         var factory = new ConnectionFactory()
         {
-            HostName = "localhost"
+            HostName = Constant.RabbitMq.Hostname
         };
 
         _connection = factory.CreateConnection();
