@@ -71,8 +71,6 @@ namespace Services
             if (!channel.IsOpen)
                 throw new InvalidOperationException("Channel is already closed.");
 
-            Console.WriteLine($"Waiting for response on queue: ResponseQueue with CorrelationId: {correlationId}");
-
             var consumer = new EventingBasicConsumer(channel);
             var tcs = new TaskCompletionSource<BookingResponse>();
 
@@ -80,27 +78,14 @@ namespace Services
             {
                 if (ea.BasicProperties.CorrelationId == correlationId)
                 {
-                    Console.WriteLine($"Message received with CorrelationId {ea.BasicProperties.CorrelationId}.");
-
                     try
                     {
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         var bookingResponse = JsonConvert.DeserializeObject<BookingResponse>(message);
-
-                        // تکمیل نتیجه
+                        
+                        channel.BasicAck(ea.DeliveryTag, false);
                         tcs.TrySetResult(bookingResponse);
-
-                        // تأیید پیام
-                        if (channel.IsOpen)
-                        {
-                            channel.BasicAck(ea.DeliveryTag, false);
-                            Console.WriteLine($"Message acknowledged with CorrelationId {ea.BasicProperties.CorrelationId}.");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Cannot acknowledge message, channel is closed for CorrelationId {ea.BasicProperties.CorrelationId}.");
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -112,7 +97,7 @@ namespace Services
 
             channel.BasicConsume(queue: "ResponseQueue", autoAck: false, consumer: consumer);
 
-            var timeout = Task.Delay(20000);
+            var timeout = Task.Delay(10000);
             var completedTask = await Task.WhenAny(tcs.Task, timeout);
 
             if (completedTask == timeout)
