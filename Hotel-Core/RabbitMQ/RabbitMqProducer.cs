@@ -47,8 +47,6 @@ public class RabbitMqProducer
                                  routingKey: queueName,
                                  basicProperties: null,
                                  body: body);
-
-            Console.WriteLine($"Message sent to queue '{queueName}': {message}");
         }
         catch (Exception ex)
         {
@@ -76,8 +74,6 @@ public class RabbitMqProducer
                                  routingKey: queueName,
                                  basicProperties: properties,
                                  body: body);
-
-            Console.WriteLine($"Message sent to queue '{queueName}' with custom properties: {message}");
         }
         catch (Exception ex)
         {

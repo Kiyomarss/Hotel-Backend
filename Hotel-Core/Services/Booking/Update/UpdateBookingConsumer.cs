@@ -33,8 +33,6 @@ public class UpdateBookingConsumer : IDisposable
 
     public async Task ReceiveMessagesFromQueue(string queueName, CancellationToken stoppingToken)
     {
-        Console.WriteLine($"Connecting1111 to queue: {queueName}");
-
         _channel.QueueDeclare(
                               queue: queueName,
                               durable: true,
@@ -121,8 +119,6 @@ public class UpdateBookingConsumer : IDisposable
                               queue: queueName,
                               autoAck: false,
                               consumer: consumer);
-
-        Console.WriteLine($"Listening for {queueName}...");
 
         while (!stoppingToken.IsCancellationRequested)
         {
