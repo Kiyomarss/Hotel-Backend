@@ -46,7 +46,6 @@ namespace Hotel_UI
    
    //services.AddSingleton<ILogger<BookingsUpdaterService>>();
 
-   services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
    services.AddScoped<UpdateBookingConsumer>();
    services.AddHostedService<UpdateBookingWorker>();
    

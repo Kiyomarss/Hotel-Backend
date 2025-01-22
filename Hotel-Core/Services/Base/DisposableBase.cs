@@ -1,13 +1,11 @@
 namespace Hotel_Core.Services.Base;
 
-public abstract class DisposableBase : IDisposable
+public abstract class DisposableBase : IDisposable, IAsyncDisposable
 {
     private bool _disposed = false;
 
-    // این متد توسط کلاس‌های فرزند برای مدیریت منابع پیاده‌سازی می‌شود
     protected abstract void DisposeManagedResources();
-
-    // مدیریت منابع غیرمدیریت‌شده (در صورت نیاز)
+    protected virtual Task DisposeManagedResourcesAsync() => Task.CompletedTask;
     protected virtual void DisposeUnmanagedResources() { }
 
     public void Dispose()
@@ -16,16 +14,19 @@ public abstract class DisposableBase : IDisposable
         {
             DisposeManagedResources();
             DisposeUnmanagedResources();
-
             _disposed = true;
         }
-
         GC.SuppressFinalize(this);
     }
 
-    // Finalizer
-    ~DisposableBase()
+    public async ValueTask DisposeAsync()
     {
-        Dispose();
+        if (!_disposed)
+        {
+            await DisposeManagedResourcesAsync();
+            DisposeUnmanagedResources();
+            _disposed = true;
+        }
+        GC.SuppressFinalize(this);
     }
 }
