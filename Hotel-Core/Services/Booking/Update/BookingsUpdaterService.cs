@@ -58,7 +58,7 @@ namespace Services
             try
             {
                 // ارسال پیام
-                _rabbitMqProducer.SendMessageToQueueWithProperties(messageJson, "UpdateBookingQueue", properties);
+                await _rabbitMqProducer.SendMessageToQueueWithPropertiesAsync(messageJson, "UpdateBookingQueue", properties);
 
                 // منتظر دریافت پاسخ از صف دائمی
                 var response = await WaitForResponseAsync(properties.CorrelationId);

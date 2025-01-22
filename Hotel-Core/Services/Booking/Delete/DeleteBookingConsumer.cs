@@ -6,25 +6,21 @@ using Hotel_Core.Services.Base;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Services;
 
 public class DeleteBookingConsumer : DisposableBase
 {
-    private readonly IBookingsRepository _bookingsRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConnection _connection;
     private readonly IModel _channel;
 
-    public DeleteBookingConsumer(IBookingsRepository bookingsRepository, IUnitOfWork unitOfWork)
+    public DeleteBookingConsumer(IServiceScopeFactory scopeFactory)
     {
-        _bookingsRepository = bookingsRepository;
-        _unitOfWork = unitOfWork;
+        _scopeFactory = scopeFactory;
 
-        var factory = new ConnectionFactory()
-        {
-            HostName = Constant.RabbitMq.Hostname
-        };
+        var factory = new ConnectionFactory();
 
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
@@ -44,12 +40,14 @@ public class DeleteBookingConsumer : DisposableBase
             if (stoppingToken.IsCancellationRequested)
             {
                 _channel.BasicAck(ea.DeliveryTag, multiple: false);
+
                 return;
             }
 
             var body = ea.Body.ToArray();
             var messageJson = Encoding.UTF8.GetString(body);
 
+            IUnitOfWork unitOfWork = null!;
             bool transactionStarted = false;
 
             try
@@ -57,18 +55,23 @@ public class DeleteBookingConsumer : DisposableBase
                 var deleteMessage = JsonConvert.DeserializeObject<dynamic>(messageJson);
                 Guid bookingId = deleteMessage.BookingId;
 
+                using var scope = _scopeFactory.CreateScope();
+
+                var bookingsRepository = scope.ServiceProvider.GetRequiredService<IBookingsRepository>();
+                unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
                 // Start the transaction
-                await _unitOfWork.BeginTransactionAsync();
+                await unitOfWork.BeginTransactionAsync();
                 transactionStarted = true;
 
-                var booking = await _bookingsRepository.FindBookingById(bookingId);
+                var booking = await bookingsRepository.FindBookingById(bookingId);
                 if (booking == null)
                 {
                     throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
                 }
 
-                await _bookingsRepository.DeleteBooking(bookingId);
-                await _unitOfWork.CommitTransactionAsync();
+                await bookingsRepository.DeleteBooking(bookingId);
+                await unitOfWork.CommitTransactionAsync();
 
                 // Acknowledge the message after successful processing
                 _channel.BasicAck(ea.DeliveryTag, multiple: false);
@@ -78,8 +81,9 @@ public class DeleteBookingConsumer : DisposableBase
             {
                 if (transactionStarted)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
+                    await unitOfWork.RollbackTransactionAsync();
                 }
+
                 Console.WriteLine($"Error while deleting booking: {ex.Message}");
             }
         };

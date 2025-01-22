@@ -94,7 +94,14 @@ public class BookingsController  : Controller
     [Route("[action]/{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var isMessageSent = await _bookingsDeleterService.InitiateDeleteBooking(id);
-        return Json(new { isDeleted = isMessageSent });
+        try
+        {
+            await _bookingsDeleterService.InitiateDeleteBooking(id);
+            return Ok(new { isDeleted = true });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { isDeleted = false, error = ex.Message });
+        }
     }
 }

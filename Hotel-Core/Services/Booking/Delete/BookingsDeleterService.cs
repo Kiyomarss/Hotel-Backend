@@ -13,7 +13,7 @@ namespace Services
             _rabbitMqProducer = rabbitMqProducer;
         }
 
-        public Task<bool> InitiateDeleteBooking(Guid bookingId)
+        public async Task InitiateDeleteBooking(Guid bookingId)
         {
             if (bookingId == Guid.Empty)
                 throw new ArgumentException("Invalid booking ID");
@@ -26,9 +26,7 @@ namespace Services
 
             // ارسال پیام به صف
             var messageJson = JsonConvert.SerializeObject(deleteMessage);
-            _rabbitMqProducer.SendMessageToQueue(messageJson, "DeleteBookingQueue");
-
-            return Task.FromResult(true); // پیام ارسال شد
+            await _rabbitMqProducer.SendMessageToQueueAsync(messageJson, "DeleteBookingQueue");
         }
     }
 }

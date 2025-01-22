@@ -24,7 +24,7 @@ public class RabbitMqProducer
         return channel.CreateBasicProperties();
     }
 
-    public void SendMessageToQueue(string message, string queueName)
+    public async Task SendMessageToQueueAsync(string message, string queueName)
     {
         try
         {
@@ -40,10 +40,11 @@ public class RabbitMqProducer
 
             var body = Encoding.UTF8.GetBytes(message);
 
-            channel.BasicPublish(exchange: "",
-                                 routingKey: queueName,
-                                 basicProperties: null,
-                                 body: body);
+            await Task.Run(() => 
+                               channel.BasicPublish(exchange: "",
+                                                    routingKey: queueName,
+                                                    basicProperties: null,
+                                                    body: body));
         }
         catch (Exception ex)
         {
@@ -51,7 +52,7 @@ public class RabbitMqProducer
         }
     }
     
-    public void SendMessageToQueueWithProperties(string message, string queueName, IBasicProperties properties)
+    public async Task SendMessageToQueueWithPropertiesAsync(string message, string queueName, IBasicProperties properties)
     {
         try
         {
@@ -67,10 +68,11 @@ public class RabbitMqProducer
 
             var body = Encoding.UTF8.GetBytes(message);
 
-            channel.BasicPublish(exchange: "",
-                                 routingKey: queueName,
-                                 basicProperties: properties,
-                                 body: body);
+            await Task.Run(() =>
+                               channel.BasicPublish(exchange: "",
+                                                    routingKey: queueName,
+                                                    basicProperties: properties,
+                                                    body: body));
         }
         catch (Exception ex)
         {

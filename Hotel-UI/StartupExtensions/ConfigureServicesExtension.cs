@@ -40,8 +40,6 @@ namespace Hotel_UI
    
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
-   services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
-   services.AddScoped<DeleteBookingConsumer>();
    services.AddHostedService<DeleteBookingWorker>();
    
    services.AddScoped<UpdateBookingConsumer>();
@@ -53,8 +51,12 @@ namespace Hotel_UI
     DependencyInjection = ioc =>
     {
      ioc.AddSingleton<RabbitMqProducer>(_ => new RabbitMqProducer());
+     
      ioc.AddSingleton<IBookingsUpdaterService, BookingsUpdaterService>(resolver => new BookingsUpdaterService(resolver.GetService<RabbitMqProducer>(), resolver.GetService<ILogger<BookingsUpdaterService>>()));
      ioc.AddSingleton<UpdateBookingConsumer>(resolver => { var scopeFactory = resolver.GetService<IServiceScopeFactory>(); return new UpdateBookingConsumer(scopeFactory); });
+     
+     ioc.AddSingleton<IBookingsDeleterService, BookingsDeleterService>(resolver => new BookingsDeleterService(resolver.GetService<RabbitMqProducer>()));
+     ioc.AddSingleton<DeleteBookingConsumer>(resolver => { var scopeFactory = resolver.GetService<IServiceScopeFactory>(); return new DeleteBookingConsumer(scopeFactory);});
     }
    });
 
