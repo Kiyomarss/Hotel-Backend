@@ -44,18 +44,15 @@ namespace Hotel_UI
    services.AddScoped<DeleteBookingConsumer>();
    services.AddHostedService<DeleteBookingWorker>();
    
-   //services.AddSingleton<ILogger<BookingsUpdaterService>>();
-
    services.AddScoped<UpdateBookingConsumer>();
    services.AddHostedService<UpdateBookingWorker>();
    
-   services.AddSingleton<RabbitMqProducer>();
-
    services.AddRawRabbit(new RawRabbitOptions
    {
     ClientConfiguration = configuration.GetSection("RawRabbit").Get<RawRabbit.Configuration.RawRabbitConfiguration>(),
     DependencyInjection = ioc =>
     {
+     ioc.AddSingleton<RabbitMqProducer>(_ => new RabbitMqProducer());
      ioc.AddSingleton<IBookingsUpdaterService, BookingsUpdaterService>(resolver => new BookingsUpdaterService(resolver.GetService<RabbitMqProducer>(), resolver.GetService<ILogger<BookingsUpdaterService>>()));
      ioc.AddSingleton<UpdateBookingConsumer>(resolver => { var scopeFactory = resolver.GetService<IServiceScopeFactory>(); return new UpdateBookingConsumer(scopeFactory); });
     }
