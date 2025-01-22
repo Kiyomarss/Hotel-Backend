@@ -49,7 +49,7 @@ namespace Hotel_UI
    
    services.AddRawRabbit(new RawRabbitOptions
    {
-    ClientConfiguration = configuration.GetSection("RawRabbit").Get<RawRabbit.Configuration.RawRabbitConfiguration>(),
+    ClientConfiguration = configuration.GetSection("RawRabbit").Get<RawRabbitConfiguration>(),
     DependencyInjection = ioc =>
     {
      ioc.AddSingleton<RabbitMqProducer>(_ => new RabbitMqProducer());

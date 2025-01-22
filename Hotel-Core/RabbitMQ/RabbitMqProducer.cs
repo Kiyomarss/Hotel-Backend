@@ -9,10 +9,7 @@ public class RabbitMqProducer
 
     public RabbitMqProducer()
     {
-        _connectionFactory = new ConnectionFactory()
-        {
-            HostName = Constant.Constant.RabbitMq.Hostname
-        };
+        _connectionFactory = new ConnectionFactory();
     }
 
     // متد برای ایجاد اتصال

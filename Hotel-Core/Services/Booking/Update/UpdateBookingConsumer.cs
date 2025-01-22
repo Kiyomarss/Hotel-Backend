@@ -23,10 +23,7 @@ public class UpdateBookingConsumer : DisposableBase
     {
         _scopeFactory = scopeFactory;
 
-        var factory = new ConnectionFactory()
-        {
-            HostName = Constant.RabbitMq.Hostname
-        };
+        var factory = new ConnectionFactory();
 
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
