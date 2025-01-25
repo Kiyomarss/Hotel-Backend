@@ -1,7 +1,7 @@
 ﻿namespace ServiceContracts
 {
- public interface IBookingsDeleterService
- {
-  Task InitiateDeleteBooking(Guid bookingId);
- }
+    public interface IBookingsDeleterService
+    {
+        Task<bool> DeleteBooking(Guid bookingId);
+    }
 }

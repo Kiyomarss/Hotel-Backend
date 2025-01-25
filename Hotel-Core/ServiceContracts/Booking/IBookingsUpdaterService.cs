@@ -6,6 +6,6 @@ namespace ServiceContracts
 {
     public interface IBookingsUpdaterService
     {
-        Task<BookingResponse> InitiateUpdateBooking(Guid bookingId, JsonPatchDocument<Booking> patchDoc);
+        Task<BookingResponse> UpdateBooking(Guid bookingId, JsonPatchDocument<Booking> patchDoc);
     };
 }

@@ -1,5 +1,4 @@
 ﻿using ContactsManager.Core.Domain.IdentityEntities;
-using Hotel_Core.RabbitMQ;
 using Hotel_Core.ServiceContracts;
 using Hotel_Core.Services;
 using Hotel_Infrastructure.DbContext;
@@ -9,18 +8,10 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
-using RawRabbit.Configuration;
-using RawRabbit;
-using RawRabbit.DependencyInjection.ServiceCollection;
-using RawRabbit.Instantiation;
 using Repositories;
 using RepositoryContracts;
 using ServiceContracts;
 using Services;
-using Microsoft.Extensions.DependencyInjection;
-using RawRabbit.DependencyInjection;
-using IDependencyResolver = RawRabbit.DependencyInjection.IDependencyResolver;
-
 
 namespace Hotel_UI
 {
@@ -35,30 +26,10 @@ namespace Hotel_UI
    
    services.AddScoped<IUnitOfWork, UnitOfWork>();
    
-   //services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMQ"));
-   //services.AddTransient<RabbitMqProducer>();
-   
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
-   services.AddHostedService<DeleteBookingWorker>();
-   
-   services.AddScoped<UpdateBookingConsumer>();
-   services.AddHostedService<UpdateBookingWorker>();
-   
-   services.AddRawRabbit(new RawRabbitOptions
-   {
-    ClientConfiguration = configuration.GetSection("RawRabbit").Get<RawRabbitConfiguration>(),
-    DependencyInjection = ioc =>
-    {
-     ioc.AddSingleton<RabbitMqProducer>(_ => new RabbitMqProducer());
-     
-     ioc.AddSingleton<IBookingsUpdaterService, BookingsUpdaterService>(resolver => new BookingsUpdaterService(resolver.GetService<RabbitMqProducer>(), resolver.GetService<ILogger<BookingsUpdaterService>>()));
-     ioc.AddSingleton<UpdateBookingConsumer>(resolver => { var scopeFactory = resolver.GetService<IServiceScopeFactory>(); return new UpdateBookingConsumer(scopeFactory); });
-     
-     ioc.AddSingleton<IBookingsDeleterService, BookingsDeleterService>(resolver => new BookingsDeleterService(resolver.GetService<RabbitMqProducer>()));
-     ioc.AddSingleton<DeleteBookingConsumer>(resolver => { var scopeFactory = resolver.GetService<IServiceScopeFactory>(); return new DeleteBookingConsumer(scopeFactory);});
-    }
-   });
+   services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
+   services.AddScoped<IBookingsUpdaterService, BookingsUpdaterService>();
 
    services.AddScoped<ICabinsRepository, CabinsRepository>();
    services.AddScoped<ICabinsGetterService, CabinsGetterService>();

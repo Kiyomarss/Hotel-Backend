@@ -1,14 +1,12 @@
 using System.Configuration;
 using System.Text;
 using Entities;
-using Hotel_Core.RabbitMQ;
 using Hotel_Infrastructure.DbContext;
 using Hotel_UI;
 using Hotel_UI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 

@@ -58,7 +58,7 @@ public class BookingsController  : Controller
     [Route("[action]/{id}")]
     public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
     {
-        var updatedBooking = await _bookingsUpdaterService.InitiateUpdateBooking(id, patchDoc);
+        var updatedBooking = await _bookingsUpdaterService.UpdateBooking(id, patchDoc);
         return Ok(new
         {
             Message = "Booking updated successfully",
@@ -94,14 +94,7 @@ public class BookingsController  : Controller
     [Route("[action]/{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            await _bookingsDeleterService.InitiateDeleteBooking(id);
-            return Ok(new { isDeleted = true });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { isDeleted = false, error = ex.Message });
-        }
+        var deleteBooking = await _bookingsDeleterService.DeleteBooking(id);
+        return Json(new { isDeleted = deleteBooking });
     }
 }

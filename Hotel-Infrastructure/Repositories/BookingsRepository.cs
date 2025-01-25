@@ -21,15 +21,14 @@ namespace Hotel_Infrastructure.Repositories
 
             return Task.FromResult(booking);
         }
-
+        
         public async Task<Booking?> GetBookingByBookingId(Guid bookingId)
         {
             var booking = await _db.Set<Booking>()
-                                   .AsNoTracking()
-                                   .Include(b => b.Guest)
-                                   .Include(b => b.Cabin)
-                                   .FirstOrDefaultAsync(b => b.Id == bookingId);
-
+                .Include(b => b.Guest)
+                .Include(b => b.Cabin)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+            
             return booking;
         }
         
