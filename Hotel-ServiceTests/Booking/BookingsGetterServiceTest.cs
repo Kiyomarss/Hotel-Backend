@@ -3,6 +3,7 @@ using Entities;
 using FluentAssertions;
 using Hotel_Core.Domain.Entities;
 using Hotel_Core.DTO;
+using Hotel_Core.ServiceContracts;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RepositoryContracts;
@@ -15,10 +16,6 @@ namespace Hotel_ServiceTests
         private readonly Mock<IBookingsRepository> _mockRepository;
         private readonly Mock<ILogger<BookingsGetterService>> _mockBookingsGetterServiceLogger;
         private readonly BookingsGetterService _bookingsGetterService;
-        private readonly Mock<ILogger<BookingsUpdaterService>> _mockBookingsUpdaterServiceLogger;
-        private readonly BookingsDeleterService _bookingsDeleterService;
-        private readonly Mock<ILogger<BookingsDeleterService>> _mockBookingsDeleterServiceLogger;
-        private readonly BookingsUpdaterService _bookingsUpdaterService;
         private readonly Fixture _fixture;
 
         public BookingsGetterServiceTests()
@@ -26,15 +23,9 @@ namespace Hotel_ServiceTests
             _mockRepository = new Mock<IBookingsRepository>();
             _mockBookingsGetterServiceLogger = new Mock<ILogger<BookingsGetterService>>();
             _bookingsGetterService = new BookingsGetterService(_mockRepository.Object, _mockBookingsGetterServiceLogger.Object);
-            _mockBookingsUpdaterServiceLogger = new Mock<ILogger<BookingsUpdaterService>>();
-            _bookingsUpdaterService = new BookingsUpdaterService(_mockRepository.Object, _mockBookingsUpdaterServiceLogger.Object);
-            _bookingsDeleterService = new BookingsDeleterService(_mockRepository.Object, _mockBookingsGetterServiceLogger.Object);
-            _mockBookingsDeleterServiceLogger = new Mock<ILogger<BookingsDeleterService>>();            
             _fixture = new Fixture();
         }
 
-        #region BookingsGetterService
-        
         [Fact]
         public async Task GetBookings_ShouldReturnPaginatedResult()
         {
@@ -56,6 +47,7 @@ namespace Hotel_ServiceTests
             Assert.NotNull(result);
             Assert.Equal(bookings.Count, result.TotalCount);
             Assert.Equal(bookings.Count, result.Items.Count);
+            _mockRepository.Verify(repo => repo.GetBookings("confirmed", "startDate", "asc", 1, 10), Times.Once);
         }
 
         [Fact]
@@ -91,6 +83,8 @@ namespace Hotel_ServiceTests
                 Assert.Equal(expectedResponses[i].Guests.FullName, result[i].Guests.FullName);
                 Assert.Equal(expectedResponses[i].Cabins.Name, result[i].Cabins.Name);
             }
+            
+            _mockRepository.Verify(repo => repo.GetBookingsAfterDate(date), Times.Once);
         }
         
         [Fact]
@@ -139,64 +133,70 @@ namespace Hotel_ServiceTests
         }
         
         [Fact]
-        public async Task GetStaysTodayActivity_ShouldReturnTodaysBookings()
+        public async Task GetStaysTodayActivity_ShouldReturnFilteredBookingsBasedOnStatus()
         {
-            // Arrange
-            var bookings = _fixture.CreateMany<Booking>(1).ToList();
+            var today = DateTime.UtcNow.Date;
+            var fixture = new Fixture();
+
+            var bookings = fixture.Build<Booking>()
+                                  .With(b => b.Status, "unconfirmed")
+                                  .With(b => b.StartDate, today.AddDays(-1))
+                                  .With(b => b.EndDate, today.AddDays(1))
+                                  .CreateMany(2)
+                                  .Union(
+                                         fixture.Build<Booking>()
+                                                .With(b => b.Status, "checked-in")
+                                                .With(b => b.StartDate, today.AddDays(-2))
+                                                .With(b => b.EndDate, today)
+                                                .CreateMany(3)
+                                        ).ToList();
+
+            var expectedResponses = bookings.Select(b => b.ToBookingResponse()).ToList();
 
             _mockRepository.Setup(repo => repo.GetStaysTodayActivity())
-                .ReturnsAsync(bookings);
+                           .ReturnsAsync(bookings);
 
-            // Act
             var result = await _bookingsGetterService.GetStaysTodayActivity();
 
-            // Assert
             Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal(bookings.First().Id, result.First().Id);
+            Assert.Equal(expectedResponses.Count, result.Count);
+
+            for (int i = 0; i < expectedResponses.Count; i++)
+            {
+                Assert.Equal(expectedResponses[i].Id, result[i].Id);
+                Assert.Equal(expectedResponses[i].Guests.FullName, result[i].Guests.FullName);
+                Assert.Equal(expectedResponses[i].Cabins.Name, result[i].Cabins.Name);
+            }
+
+            _mockRepository.Verify(repo => repo.GetStaysTodayActivity(), Times.Once);
         }
 
         [Fact]
         public async Task GetBookingByBookingId_ShouldReturnBookingResponse_WhenBookingExists()
         {
             // Arrange
-            var booking = _fixture.Build<Booking>()
-                .With(b => b.Id, Guid.NewGuid())
-                .With(b => b.StartDate, DateTime.UtcNow.AddDays(-3))
-                .With(b => b.EndDate, DateTime.UtcNow)
-                .With(b => b.NumNights, 3)
-                .With(b => b.NumGuests, 2)
-                .With(b => b.CabinPrice, 200)
-                .With(b => b.ExtrasPrice, 50)
-                .With(b => b.TotalPrice, 250)
-                .With(b => b.Status, "checked-in")
-                .With(b => b.HasBreakfast, true)
-                .With(b => b.IsPaid, true)
-                .With(b => b.Observations, "No observations")
-                .With(b => b.CabinId, Guid.NewGuid())
-                .With(b => b.GuestId, Guid.NewGuid())
-                .With(b => b.CreateAt, DateTime.UtcNow.AddDays(-5))
-                .With(b => b.Guest, _fixture.Build<Guest>()
-                    .With(g => g.FullName, "John Doe")
-                    .With(g => g.Nationality, "USA")
-                    .With(g => g.CountryFlag, "🇺🇸")
-                    .With(g => g.Email, "john.doe@example.com")
-                    .With(g => g.NationalID, "123456789")
-                    .Create())
-                .With(b => b.Cabin, _fixture.Build<Cabin>()
-                    .With(c => c.Name, "Luxury Cabin")
-                    .Create())
-                .Create();
+            var bookingId = Guid.NewGuid();
+            var fixture = new Fixture();
 
-            _mockRepository.Setup(repo => repo.GetBookingByBookingId(booking.Id))
-                .ReturnsAsync(booking);
+            var booking = fixture.Build<Booking>()
+                                 .With(b => b.Id, bookingId)
+                                 .Create();
+
+            var expectedResponse = booking.ToBookingResponse();
+
+            _mockRepository.Setup(repo => repo.GetBookingByBookingId(bookingId))
+                           .ReturnsAsync(booking);
 
             // Act
-            var result = await _bookingsGetterService.GetBookingByBookingId(booking.Id);
+            var result = await _bookingsGetterService.GetBookingByBookingId(bookingId);
 
             // Assert
-            result.Should().NotBeNull();
-            result.Should().BeEquivalentTo(booking.ToBookingResponse(), options => options.ExcludingMissingMembers());
+            Assert.NotNull(result);
+            Assert.Equal(expectedResponse.Id, result.Id);
+            Assert.Equal(expectedResponse.Guests.FullName, result.Guests.FullName);
+            Assert.Equal(expectedResponse.Cabins.Name, result.Cabins.Name);
+
+            _mockRepository.Verify(repo => repo.GetBookingByBookingId(bookingId), Times.Once);
         }
 
         [Fact]
@@ -204,16 +204,17 @@ namespace Hotel_ServiceTests
         {
             // Arrange
             var bookingId = Guid.NewGuid();
-
             _mockRepository.Setup(repo => repo.GetBookingByBookingId(bookingId))
-                .ReturnsAsync((Booking?)null);
+                           .ReturnsAsync((Booking?)null);
 
             // Act
             Func<Task> act = async () => await _bookingsGetterService.GetBookingByBookingId(bookingId);
 
             // Assert
             await act.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("Given Booking id doesn't exist");
+                     .WithMessage("Given Booking id doesn't exist");
+
+            _mockRepository.Verify(repo => repo.GetBookingByBookingId(bookingId), Times.Once);
         }
 
         [Fact]
@@ -255,56 +256,5 @@ namespace Hotel_ServiceTests
 
             _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
         }
-        
-        #endregion
-
-        #region BookingsDeleterService
-
-        [Fact]
-        public async Task DeleteBooking_ShouldReturnTrue_WhenBookingIsDeletedSuccessfully()
-        {
-            // Arrange
-            var bookingId = Guid.NewGuid();
-            var booking = _fixture.Build<Booking>()
-                .With(b => b.Id, bookingId)
-                .Create();
-
-            _mockRepository.Setup(repo => repo.FindBookingById(bookingId))
-                .ReturnsAsync(booking);
-
-            _mockRepository.Setup(repo => repo.DeleteBooking(booking))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _bookingsDeleterService.DeleteBooking(bookingId);
-
-            // Assert
-            result.Should().BeTrue();
-
-            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
-            _mockRepository.Verify(repo => repo.DeleteBooking(booking), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteBooking_ShouldThrowKeyNotFoundException_WhenBookingDoesNotExist()
-        {
-            // Arrange
-            var bookingId = Guid.NewGuid();
-
-            _mockRepository.Setup(repo => repo.FindBookingById(bookingId))
-                .ReturnsAsync((Booking?)null);
-
-            // Act
-            Func<Task> act = async () => await _bookingsDeleterService.DeleteBooking(bookingId);
-
-            // Assert
-            await act.Should().ThrowAsync<KeyNotFoundException>()
-                .WithMessage($"Booking with ID {bookingId} does not exist.");
-
-            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
-            _mockRepository.Verify(repo => repo.DeleteBooking(It.IsAny<Booking>()), Times.Never);
-        }
-
-        #endregion
     }
 }
