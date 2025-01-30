@@ -27,24 +27,11 @@ namespace Services
   {
    ArgumentNullException.ThrowIfNull(cabinUpdateRequest);
 
-   Cabin updatedCabin;
-   
-   await _unitOfWork.BeginTransactionAsync();
-   try
+   return await _unitOfWork.ExecuteTransactionAsync(async () =>
    {
-    updatedCabin = await _cabinsRepository.UpdateCabin(cabinUpdateRequest);
-    await _unitOfWork.SaveChangesAsync();
-    await _unitOfWork.CommitTransactionAsync();
-   }
-   catch (Exception ex)
-   {
-    await _unitOfWork.RollbackTransactionAsync();
-    _logger.LogError($"Error Updating cabin: {ex.Message}");
-    
-    throw;
-   }
-
-   return updatedCabin.ToCabinResponse();
+    var updatedCabin = await _cabinsRepository.UpdateCabin(cabinUpdateRequest);
+    return updatedCabin.ToCabinResponse();
+   });
   }
  }
 }
