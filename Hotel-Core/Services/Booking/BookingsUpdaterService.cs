@@ -50,7 +50,7 @@ namespace Services
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError($"Error updating booking: {ex.Message}");
+                
                 throw;
             }
         }
