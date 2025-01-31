@@ -64,7 +64,7 @@ namespace Hotel_UI
    {
     options.AddPolicy("AllowSpecificOrigin", builder =>
     {
-     builder.WithOrigins("http://localhost:3090")
+     builder.WithOrigins("http://localhost:3090", "http://localhost:5125")
       .AllowAnyHeader()
       .AllowAnyMethod()
       .AllowCredentials();

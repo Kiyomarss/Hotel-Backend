@@ -182,34 +182,35 @@ namespace Hotel_UI.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile avatar)
+        [Consumes("application/octet-stream")]
+        public async Task<IActionResult> UpdateAvatar()// فایل باید به صورت باینری در body درخواست ارسال شود
         {
             var token = Request.Headers["Authorization"].ToString()?.Replace("Bearer ", "");
 
             if (string.IsNullOrEmpty(token))
                 return Unauthorized(new { message = "Token is missing." });
 
-            // اعتبارسنجی و استخراج claims از توکن
+            // استخراج userId از توکن
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
 
             if (jsonToken == null)
                 return Unauthorized(new { message = "Invalid token." });
 
-            var userId = jsonToken?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value; // از "sub" استفاده کنید
+            var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { message = "User is not authenticated." });
 
             var user = await _userManager.FindByIdAsync(userId);
-
             if (user == null)
                 return NotFound(new { message = "User not found." });
 
-            if (avatar == null || avatar.Length == 0)
+            // خواندن فایل از Stream
+            if (Request.ContentLength == null || Request.ContentLength == 0)
                 return BadRequest(new { message = "No avatar file provided." });
 
-            var avatarPath = await SaveNewAvatarAsync(avatar);
+            var avatarPath = await SaveNewAvatarFromStreamAsync(Request.Body);
 
             user.AvatarPath = avatarPath;
             var updateResult = await _userManager.UpdateAsync(user);
@@ -218,23 +219,22 @@ namespace Hotel_UI.Controllers
 
             return Ok(new { avatar = avatarPath, message = "Avatar updated successfully." });
         }
-
-        private async Task<string> SaveNewAvatarAsync(IFormFile avatar)
+        
+        private async Task<string> SaveNewAvatarFromStreamAsync(Stream fileStream)
         {
             var avatarFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatars");
 
-            var fileName = Guid.NewGuid() + Path.GetExtension(avatar.FileName);
-            
             if (!Directory.Exists(avatarFolderPath))
             {
                 Directory.CreateDirectory(avatarFolderPath);
             }
 
+            var fileName = Guid.NewGuid() + ".jpg";
             var filePath = Path.Combine(avatarFolderPath, fileName);
 
-            await using (var stream = new FileStream(filePath, FileMode.Create))
+            await using (var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                await avatar.CopyToAsync(stream);
+                await fileStream.CopyToAsync(outputStream);
             }
 
             return $"/avatars/{fileName}";

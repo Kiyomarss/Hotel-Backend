@@ -3,11 +3,13 @@ using System.Text;
 using Entities;
 using Hotel_Infrastructure.DbContext;
 using Hotel_UI;
+using Hotel_UI.Filters;
 using Hotel_UI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,6 +53,50 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Hotel API",
+        Version = "v1"
+    });
+    
+    options.MapType<Stream>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
+
+    options.OperationFilter<FileUploadOperationFilter>();
+    
+    var securityScheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter the JWT token: Bearer {your_token}",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    };
+
+    options.AddSecurityDefinition("Bearer", securityScheme);
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new List<string>()
+        }
+    });
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -65,6 +111,8 @@ app.UseHttpLogging();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapOpenApi();
     app.UseDeveloperExceptionPage();
 }
