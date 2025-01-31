@@ -27,25 +27,13 @@ namespace Services
   {
    if (settingUpdateRequest == null)
     throw new ArgumentNullException(nameof(settingUpdateRequest));
+   
+   return await _unitOfWork.ExecuteTransactionAsync(async () =>
+   {
+    var savedSetting = await _settingRepository.UpdateSetting(settingUpdateRequest.ToSetting());
 
-   Setting savedSetting;
-   
-   await _unitOfWork.BeginTransactionAsync();
-   try
-   {
-    savedSetting = await _settingRepository.UpdateSetting(settingUpdateRequest.ToSetting());
-    await _unitOfWork.SaveChangesAsync();
-    await _unitOfWork.CommitTransactionAsync();
-   }
-   catch (Exception ex)
-   {
-    await _unitOfWork.RollbackTransactionAsync();
-    _logger.LogError($"Error Updating setting: {ex.Message}");
-    
-    throw;
-   }
-   
-   return savedSetting.ToSettingResponse();
+    return savedSetting.ToSettingResponse();
+   });
   }
  }
 }

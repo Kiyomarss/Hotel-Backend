@@ -27,22 +27,7 @@ namespace Services
    if (cabin == null)
     throw new KeyNotFoundException($"cabin with ID {cabinId} does not exist.");
 
-   bool result;
-   
-   await _unitOfWork.BeginTransactionAsync();
-   try
-   {
-    result = await _cabinsRepository.DeleteCabin(cabinId);
-    await _unitOfWork.CommitTransactionAsync();
-   }
-   catch
-   {
-    await _unitOfWork.RollbackTransactionAsync();
-
-    throw;
-   }
-
-   return result;
+   return await _unitOfWork.ExecuteTransactionAsync(async () => await _cabinsRepository.DeleteCabin(cabinId));
   }
  }
 }

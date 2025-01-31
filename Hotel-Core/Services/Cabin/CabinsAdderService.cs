@@ -30,22 +30,12 @@ namespace Services
 
    cabin.Id = Guid.NewGuid();
 
-   await _unitOfWork.BeginTransactionAsync();
-   try
+   return await _unitOfWork.ExecuteTransactionAsync(async () =>
    {
     cabin = await _cabinsRepository.AddCabin(cabin);
-    await _unitOfWork.SaveChangesAsync();
-    await _unitOfWork.CommitTransactionAsync();
-   }
-   catch (Exception ex)
-   {
-    await _unitOfWork.RollbackTransactionAsync();
-    _logger.LogError($"Error Adding cabin: {ex.Message}");
 
-    throw;
-   }
-   
-   return cabin.ToCabinResponse();
+    return cabin.ToCabinResponse();
+   });
   }
  }
 }

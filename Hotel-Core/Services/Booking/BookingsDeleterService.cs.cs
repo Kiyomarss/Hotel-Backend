@@ -27,22 +27,7 @@ namespace Services
             if (booking == null)
                 throw new KeyNotFoundException($"Booking with ID {bookingId} does not exist.");
 
-            bool result;
-    
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                result = await _bookingsRepository.DeleteBooking(bookingId);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-
-                throw;
-            }
-    
-            return result;    
+            return await _unitOfWork.ExecuteTransactionAsync(async () => await _bookingsRepository.DeleteBooking(bookingId));
         }
     }
 }
