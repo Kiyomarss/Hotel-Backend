@@ -15,9 +15,9 @@ namespace Repositories
             _db = db;
         }
 
-        public async Task<Setting> GetSetting()
+        public async Task<Setting?> GetSetting()
         {
-            return await _db.Set<Setting>().SingleAsync();
+            return await _db.Set<Setting>().SingleOrDefaultAsync();
         }
 
         public async Task<Setting> UpdateSetting(Setting setting)

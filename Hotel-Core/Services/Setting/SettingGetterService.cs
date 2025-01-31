@@ -21,8 +21,14 @@ namespace Services
   public virtual async Task<SettingResponse> GetSetting()
   {
    var setting = await _settingRepository.GetSetting();
+    
+   if (setting == null)
+   {
+    throw new InvalidOperationException("No settings found");
+   }
 
    return setting.ToSettingResponse();
   }
+
  }
 }
