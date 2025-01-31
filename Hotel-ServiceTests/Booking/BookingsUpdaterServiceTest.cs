@@ -7,6 +7,10 @@ using Hotel_Core.Domain.Entities;
 using Hotel_Core.ServiceContracts;
 using RepositoryContracts;
 using Services;
+using System;
+using System.Threading.Tasks;
+using Hotel_Core.DTO;
+using Xunit;
 
 public class BookingsUpdaterServiceTests
 {
@@ -95,6 +99,8 @@ public class BookingsUpdaterServiceTests
 
         _mockRepository.Setup(repo => repo.GetBookingByBookingId(bookingId)).ReturnsAsync(booking);
         _mockRepository.Setup(repo => repo.UpdateBooking(booking)).ReturnsAsync(booking);
+        _mockUnitOfWork.Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<BookingResponse>>>()))
+                       .Returns<Func<Task<BookingResponse>>>(operation => operation());
 
         // Act
         var result = await _bookingsUpdaterService.UpdateBooking(bookingId, patchDoc);
@@ -102,9 +108,7 @@ public class BookingsUpdaterServiceTests
         // Assert
         result.Should().NotBeNull();
         result.NumGuests.Should().Be(3);
-        _mockUnitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
-        _mockUnitOfWork.Verify(uow => uow.SaveChangesAsync(), Times.Once);
-        _mockUnitOfWork.Verify(uow => uow.CommitTransactionAsync(), Times.Once);
+        _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<BookingResponse>>>()), Times.Once);
     }
     
     [Fact]
@@ -124,13 +128,14 @@ public class BookingsUpdaterServiceTests
 
         _mockRepository.Setup(repo => repo.GetBookingByBookingId(bookingId)).ReturnsAsync(booking);
         _mockRepository.Setup(repo => repo.UpdateBooking(booking)).ThrowsAsync(new Exception("Update failed"));
+        _mockUnitOfWork.Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<BookingResponse>>>()))
+                       .ThrowsAsync(new Exception("Update failed"));
 
         // Act
         Func<Task> act = async () => await _bookingsUpdaterService.UpdateBooking(bookingId, patchDoc);
 
         // Assert
         await act.Should().ThrowAsync<Exception>().WithMessage("Update failed");
-        _mockUnitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
-        _mockUnitOfWork.Verify(uow => uow.RollbackTransactionAsync(), Times.Once);
+        _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<BookingResponse>>>()), Times.Once);
     }
 }

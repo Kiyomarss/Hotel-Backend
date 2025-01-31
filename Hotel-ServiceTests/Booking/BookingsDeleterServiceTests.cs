@@ -38,6 +38,8 @@ namespace Hotel_ServiceTests
             var booking = _fixture.Build<Booking>().With(b => b.Id, bookingId).Create();
 
             _mockRepository.Setup(repo => repo.FindBookingById(bookingId)).ReturnsAsync(booking);
+            _mockUnitOfWork.Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<bool>>>()))
+                           .Returns<Func<Task<bool>>>(op => op());
             _mockRepository.Setup(repo => repo.DeleteBooking(bookingId)).ReturnsAsync(true);
 
             // Act
@@ -46,9 +48,8 @@ namespace Hotel_ServiceTests
             // Assert
             result.Should().BeTrue();
             _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+            _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<bool>>>()), Times.Once);
             _mockRepository.Verify(repo => repo.DeleteBooking(bookingId), Times.Once);
-            _mockUnitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
-            _mockUnitOfWork.Verify(uow => uow.CommitTransactionAsync(), Times.Once);
         }
 
         [Fact]
@@ -64,27 +65,28 @@ namespace Hotel_ServiceTests
             // Assert
             await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage($"Booking with ID {bookingId} does not exist.");
             _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+            _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<bool>>>()), Times.Never);
             _mockRepository.Verify(repo => repo.DeleteBooking(bookingId), Times.Never);
-            _mockUnitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Never);
         }
 
         [Fact]
-        public async Task DeleteBooking_ShouldRollbackTransaction_WhenDeletionFails()
+        public async Task DeleteBooking_ShouldThrowException_WhenDeletionFails()
         {
             // Arrange
             var bookingId = Guid.NewGuid();
             var booking = _fixture.Build<Booking>().With(b => b.Id, bookingId).Create();
 
             _mockRepository.Setup(repo => repo.FindBookingById(bookingId)).ReturnsAsync(booking);
-            _mockRepository.Setup(repo => repo.DeleteBooking(bookingId)).ThrowsAsync(new Exception("Deletion failed"));
+            _mockUnitOfWork.Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<bool>>>()))
+                           .ThrowsAsync(new Exception("Deletion failed"));
 
             // Act
             Func<Task> act = async () => await _bookingsDeleterService.DeleteBooking(bookingId);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage("Deletion failed");
-            _mockUnitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
-            _mockUnitOfWork.Verify(uow => uow.RollbackTransactionAsync(), Times.Once);
+            _mockRepository.Verify(repo => repo.FindBookingById(bookingId), Times.Once);
+            _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<bool>>>()), Times.Once);
         }
     }
 }
