@@ -23,7 +23,7 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Signup([FromBody] SignupRequest request)
+        public async Task<IActionResult> Signup(SignupRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { message = "Invalid input." });
@@ -43,7 +43,7 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { message = "Invalid input." });
@@ -119,7 +119,7 @@ namespace Hotel_UI.Controllers
         
         [HttpPost]
         [Authorize(Roles = "Admin, User")]
-        public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateCurrentUser(UpdateUserRequest request)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 

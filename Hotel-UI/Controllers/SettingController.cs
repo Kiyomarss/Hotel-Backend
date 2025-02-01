@@ -16,7 +16,7 @@ public class SettingsController  : BaseController
     }
     
     [HttpPut]
-    public async Task<IActionResult> Edit([FromBody] SettingUpsertRequest dto)
+    public async Task<IActionResult> Edit(SettingUpsertRequest dto)
     {
         SettingResponse updatedSetting = await _settingUpdaterService.UpdateSetting(dto);
 

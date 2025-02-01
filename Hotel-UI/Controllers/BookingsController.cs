@@ -52,7 +52,7 @@ public class BookingsController  : BaseController
     }
     
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
+    public async Task<IActionResult> UpdateBooking(Guid id, JsonPatchDocument<Booking> patchDoc)
     {
         var updatedBooking = await _bookingsUpdaterService.UpdateBooking(id, patchDoc);
         return Ok(new
