@@ -6,8 +6,7 @@ using ServiceContracts;
 
 namespace Hotel_UI.Controllers;
 
-[Route("[controller]")]
-public class CabinsController  : Controller
+public class CabinsController  : BaseController
 {
     private readonly ICabinsDeleterService _cabinsDeleterService;
     private readonly ICabinsGetterService _cabinsGetterService;
@@ -23,7 +22,6 @@ public class CabinsController  : Controller
     }
 
     [HttpPost]
-    [Route("[action]")]
     public async Task<IActionResult> Create([FromForm] CabinUpsertRequest dto)
     {
         if (dto.Image is { Length: > 0 })
@@ -41,7 +39,7 @@ public class CabinsController  : Controller
 
         var cabinResponse = await _cabinsAdderService.AddCabin(dto);
 
-        return Json(new
+        return Ok(new
         {
             Message = "Cabin created successfully",
             Cabin = cabinResponse
@@ -49,7 +47,6 @@ public class CabinsController  : Controller
     }
 
     [HttpPut]
-    [Route("[action]")]
     public async Task<IActionResult> Edit([FromForm] CabinUpsertRequest dto)
     {
         CabinResponse? existingCabin = await _cabinsGetterService.GetCabinByCabinId(dto.Id);
@@ -119,18 +116,16 @@ public class CabinsController  : Controller
     }
     
     [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetCabins()
     {
         var cabins = await _cabinsGetterService.GetCabins();
-        return Json(new { Cabins = cabins });
+        return Ok(new { Cabins = cabins });
     }
     
-    [HttpDelete]
-    [Route("[action]/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleteCabin = await _cabinsDeleterService.DeleteCabin(id);
-        return Json(new { isDeleted = deleteCabin });
+        return Ok(new { isDeleted = deleteCabin });
     }
 }

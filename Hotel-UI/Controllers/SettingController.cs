@@ -4,8 +4,7 @@ using ServiceContracts;
 
 namespace Hotel_UI.Controllers;
 
-[Route("[controller]")]
-public class SettingsController  : Controller
+public class SettingsController  : BaseController
 {
     private readonly ISettingGetterService _settingGetterService;
     private readonly ISettingUpdaterService _settingUpdaterService;
@@ -17,7 +16,6 @@ public class SettingsController  : Controller
     }
     
     [HttpPut]
-    [Route("[action]")]
     public async Task<IActionResult> Edit([FromBody] SettingUpsertRequest dto)
     {
         SettingResponse updatedSetting = await _settingUpdaterService.UpdateSetting(dto);
@@ -30,10 +28,9 @@ public class SettingsController  : Controller
     }
     
     [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetSettings()
     {
         var setting = await _settingGetterService.GetSetting();
-        return Json(new { data = setting });
+        return Ok(new { data = setting });
     }
 }

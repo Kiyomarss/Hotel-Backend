@@ -9,8 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Hotel_UI.Controllers
 {
-    [Route("[controller]")]
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -24,7 +23,6 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        [Route("[action]")]
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
             if (!ModelState.IsValid)
@@ -45,7 +43,6 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        [Route("[action]")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
@@ -113,7 +110,6 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        [Route("[action]")]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
@@ -123,7 +119,6 @@ namespace Hotel_UI.Controllers
         
         [HttpPost]
         [Authorize(Roles = "Admin, User")]
-        [Route("[action]")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -181,7 +176,6 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        [Route("[action]")]
         [Consumes("application/octet-stream")]
         public async Task<IActionResult> UpdateAvatar()// فایل باید به صورت باینری در body درخواست ارسال شود
         {

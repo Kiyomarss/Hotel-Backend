@@ -8,8 +8,7 @@ using ServiceContracts;
 
 namespace Hotel_UI.Controllers;
 
-[Route("[controller]")]
-public class BookingsController  : Controller
+public class BookingsController  : BaseController
 {
     private readonly IBookingsDeleterService _bookingsDeleterService;
     private readonly IBookingsGetterService _bookingsGetterService;
@@ -23,7 +22,6 @@ public class BookingsController  : Controller
     }
 
     [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetBookings(
         [FromQuery] string? status,
         [FromQuery] string? sortBy,
@@ -40,8 +38,7 @@ public class BookingsController  : Controller
         });
     }
 
-    [HttpGet]
-    [Route("[action]/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetBooking(Guid id)
     {
         var bookingResponse = await _bookingsGetterService.GetBookingByBookingId(id);
@@ -51,11 +48,10 @@ public class BookingsController  : Controller
             return NotFound(new { Message = "Booking not found" });
         }
 
-        return Json(new { booking = bookingResponse });
+        return Ok(new { booking = bookingResponse });
     }
     
-    [HttpPatch]
-    [Route("[action]/{id}")]
+    [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] JsonPatchDocument<Booking> patchDoc)
     {
         var updatedBooking = await _bookingsUpdaterService.UpdateBooking(id, patchDoc);
@@ -67,7 +63,6 @@ public class BookingsController  : Controller
     }
     
     [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetBookingsAfterDate([FromQuery] DateTime date)
     {
         var bookingResponsesList = await _bookingsGetterService.GetBookingsAfterDate(date);
@@ -75,7 +70,6 @@ public class BookingsController  : Controller
     }
     
     [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetStaysAfterDate([FromQuery] DateTime date)
     {
         var bookingResponsesList = await _bookingsGetterService.GetStaysAfterDate(date);
@@ -83,18 +77,16 @@ public class BookingsController  : Controller
     }
 
     [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetStaysTodayActivity()
     {
         var bookingResponsesList = await _bookingsGetterService.GetStaysTodayActivity();
         return Ok(new { bookings = bookingResponsesList });
     }
     
-    [HttpDelete]
-    [Route("[action]/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleteBooking = await _bookingsDeleterService.DeleteBooking(id);
-        return Json(new { isDeleted = deleteBooking });
+        return Ok(new { isDeleted = deleteBooking });
     }
 }
