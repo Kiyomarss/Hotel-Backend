@@ -1,3 +1,4 @@
+using Entities;
 using ServiceContracts;
 using Hotel_Core.DTO;
 using RepositoryContracts;
@@ -18,7 +19,7 @@ namespace Services
    _logger = logger;
   }
   
-  public virtual async Task<SettingResponse> GetSetting()
+  public virtual async Task<Setting> GetSetting()
   {
    var setting = await _settingRepository.GetSetting();
     
@@ -27,7 +28,7 @@ namespace Services
     throw new InvalidOperationException("No settings found");
    }
 
-   return setting.ToSettingResponse();
+   return setting;
   }
 
  }

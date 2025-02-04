@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using RepositoryContracts;
 using Services;
 using Entities;
-using Hotel_Core.DTO;
 
 public class SettingGetterServiceTests
 {
@@ -33,14 +32,6 @@ public class SettingGetterServiceTests
             .With(s => s.BreakfastPrice, 20.5)
             .Create();
 
-        var settingResponse = new SettingResponse
-        {
-            MinBookingLength = setting.MinBookingLength,
-            MaxBookingLength = setting.MaxBookingLength,
-            MaxGuestsPerBooking = setting.MaxGuestsPerBooking,
-            BreakfastPrice = setting.BreakfastPrice
-        };
-
         _mockSettingRepository
             .Setup(repo => repo.GetSetting())
             .ReturnsAsync(setting);
@@ -50,10 +41,10 @@ public class SettingGetterServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.MinBookingLength.Should().Be(settingResponse.MinBookingLength);
-        result.MaxBookingLength.Should().Be(settingResponse.MaxBookingLength);
-        result.MaxGuestsPerBooking.Should().Be(settingResponse.MaxGuestsPerBooking);
-        result.BreakfastPrice.Should().Be(settingResponse.BreakfastPrice);
+        result.MinBookingLength.Should().Be(setting.MinBookingLength);
+        result.MaxBookingLength.Should().Be(setting.MaxBookingLength);
+        result.MaxGuestsPerBooking.Should().Be(setting.MaxGuestsPerBooking);
+        result.BreakfastPrice.Should().Be(setting.BreakfastPrice);
     }
 
     [Fact]
@@ -70,5 +61,4 @@ public class SettingGetterServiceTests
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("No settings found");
     }
-
 }

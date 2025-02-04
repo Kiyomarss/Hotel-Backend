@@ -22,4 +22,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Hotel-Core\Hotel-Core.csproj" />
+    <ProjectReference Include="..\Hotel-UI\Hotel-UI.csproj" />
+  </ItemGroup>
+
 </Project>

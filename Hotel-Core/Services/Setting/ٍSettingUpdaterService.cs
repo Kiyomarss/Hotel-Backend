@@ -23,17 +23,12 @@ namespace Services
    _logger = logger;
   }
 
-  public async Task<SettingResponse> UpdateSetting(SettingUpsertRequest settingUpdateRequest)
+  public async Task<Setting> UpdateSetting(Setting setting)
   {
-   if (settingUpdateRequest == null)
-    throw new ArgumentNullException(nameof(settingUpdateRequest));
+   if (setting == null)
+    throw new ArgumentNullException(nameof(setting));
    
-   return await _unitOfWork.ExecuteTransactionAsync(async () =>
-   {
-    var savedSetting = await _settingRepository.UpdateSetting(settingUpdateRequest.ToSetting());
-
-    return savedSetting.ToSettingResponse();
-   });
+   return await _unitOfWork.ExecuteTransactionAsync(async () => await _settingRepository.UpdateSetting(setting));
   }
  }
 }

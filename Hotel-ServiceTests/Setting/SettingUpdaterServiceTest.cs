@@ -29,10 +29,10 @@ public class SettingUpdaterServiceTests
     public async Task UpdateSetting_ShouldThrowArgumentNullException_WhenSettingUpdateRequestIsNull()
     {
         // Arrange
-        SettingUpsertRequest settingUpdateRequest = null;
+        Setting setting = null;
 
         // Act
-        Func<Task> act = async () => await _settingUpdaterService.UpdateSetting(settingUpdateRequest);
+        Func<Task> act = async () => await _settingUpdaterService.UpdateSetting(setting);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>();
@@ -42,7 +42,7 @@ public class SettingUpdaterServiceTests
     public async Task UpdateSetting_ShouldUpdateSetting_WhenRequestIsValid()
     {
         // Arrange
-        var settingUpdateRequest = _fixture.Build<SettingUpsertRequest>()
+        var settingUpdateRequest = _fixture.Build<Setting>()
             .With(s => s.MinBookingLength, 3)
             .With(s => s.MaxBookingLength, 10)
             .With(s => s.MaxGuestsPerBooking, 5)
@@ -56,39 +56,31 @@ public class SettingUpdaterServiceTests
             .With(s => s.BreakfastPrice, 15)
             .Create();
 
-        var settingResponse = new SettingResponse
-        {
-            MinBookingLength = 3,
-            MaxBookingLength = 10,
-            MaxGuestsPerBooking = 5,
-            BreakfastPrice = 15
-        };
-
         _mockSettingRepository
             .Setup(repo => repo.UpdateSetting(It.IsAny<Setting>()))
             .ReturnsAsync(setting);
 
         _mockUnitOfWork
-            .Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<SettingResponse>>>()))
-            .ReturnsAsync(settingResponse);
+            .Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<Setting>>>()))
+            .ReturnsAsync(setting);
 
         // Act
         var result = await _settingUpdaterService.UpdateSetting(settingUpdateRequest);
 
         // Assert
         result.Should().NotBeNull();
-        result.MinBookingLength.Should().Be(settingResponse.MinBookingLength);
-        result.MaxBookingLength.Should().Be(settingResponse.MaxBookingLength);
-        result.MaxGuestsPerBooking.Should().Be(settingResponse.MaxGuestsPerBooking);
-        result.BreakfastPrice.Should().Be(settingResponse.BreakfastPrice);
-        _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<SettingResponse>>>()), Times.Once);
+        result.MinBookingLength.Should().Be(setting.MinBookingLength);
+        result.MaxBookingLength.Should().Be(setting.MaxBookingLength);
+        result.MaxGuestsPerBooking.Should().Be(setting.MaxGuestsPerBooking);
+        result.BreakfastPrice.Should().Be(setting.BreakfastPrice);
+        _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<Setting>>>()), Times.Once);
     }
 
     [Fact]
     public async Task UpdateSetting_ShouldRollbackTransaction_WhenUpdateFails()
     {
         // Arrange
-        var settingUpdateRequest = _fixture.Build<SettingUpsertRequest>()
+        var setting = _fixture.Build<Setting>()
             .With(s => s.MinBookingLength, 3)
             .With(s => s.MaxBookingLength, 10)
             .With(s => s.MaxGuestsPerBooking, 5)
@@ -100,14 +92,14 @@ public class SettingUpdaterServiceTests
             .ThrowsAsync(new Exception("Update failed"));
 
         _mockUnitOfWork
-            .Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<SettingResponse>>>()))
+            .Setup(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<Setting>>>()))
             .ThrowsAsync(new Exception("Update failed"));
 
         // Act
-        Func<Task> act = async () => await _settingUpdaterService.UpdateSetting(settingUpdateRequest);
+        Func<Task> act = async () => await _settingUpdaterService.UpdateSetting(setting);
 
         // Assert
         await act.Should().ThrowAsync<Exception>().WithMessage("Update failed");
-        _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<SettingResponse>>>()), Times.Once);
+        _mockUnitOfWork.Verify(uow => uow.ExecuteTransactionAsync(It.IsAny<Func<Task<Setting>>>()), Times.Once);
     }
 }

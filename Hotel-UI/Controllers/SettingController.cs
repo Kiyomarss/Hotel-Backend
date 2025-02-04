@@ -1,4 +1,6 @@
+using Entities;
 using Hotel_Core.DTO;
+using Hotel_Core.DTO.Setting;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
 
@@ -16,21 +18,21 @@ public class SettingsController  : BaseController
     }
     
     [HttpPut]
-    public async Task<IActionResult> Edit(SettingUpsertRequest dto)
+    public async Task<IActionResult> Edit(Setting dto)
     {
-        SettingResponse updatedSetting = await _settingUpdaterService.UpdateSetting(dto);
+        var setting = await _settingUpdaterService.UpdateSetting(dto);
 
-        return Ok(new
-        {
-            Message = "Setting updated successfully",
-            Setting = updatedSetting
-        });
+        var response = new SettingResponseDto(new SettingDataDto(setting.MaxGuestsPerBooking, setting.BreakfastPrice, setting.MinBookingLength, setting.MaxBookingLength), "Setting updated successfully");
+
+        return Ok(response);
     }
     
     [HttpGet]
     public async Task<IActionResult> GetSettings()
     {
         var setting = await _settingGetterService.GetSetting();
-        return Ok(new { data = setting });
+        var response = new SettingResponseDto(new SettingDataDto(setting.MaxGuestsPerBooking, setting.BreakfastPrice, setting.MinBookingLength, setting.MaxBookingLength));
+
+        return Ok(response);
     }
 }

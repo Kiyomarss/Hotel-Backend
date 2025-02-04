@@ -1,9 +1,10 @@
 using ContactsManager.Core.DTO;
+using Entities;
 using Hotel_Core.DTO;
 
 namespace ServiceContracts;
 
 public interface ISettingGetterService
 {
-    Task<SettingResponse> GetSetting();
+    Task<Setting> GetSetting();
 }
