@@ -22,7 +22,7 @@ public class CabinsController  : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromForm] CabinUpsertRequest dto)
+    public async Task<IActionResult> Create(CabinUpsertRequest dto)
     {
         if (dto.Image is { Length: > 0 })
         {
@@ -47,7 +47,7 @@ public class CabinsController  : BaseController
     }
 
     [HttpPut]
-    public async Task<IActionResult> Edit([FromForm] CabinUpsertRequest dto)
+    public async Task<IActionResult> Edit(CabinUpsertRequest dto)
     {
         CabinResponse? existingCabin = await _cabinsGetterService.GetCabinByCabinId(dto.Id);
         if (existingCabin == null)
