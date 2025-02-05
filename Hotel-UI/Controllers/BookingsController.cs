@@ -1,7 +1,5 @@
-using ContactsManager.Core.DTO;
 using Hotel_Core.Domain.Entities;
 using Hotel_Core.DTO;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
@@ -22,20 +20,10 @@ public class BookingsController  : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetBookings(
-        [FromQuery] string? status,
-        [FromQuery] string? sortBy,
-        [FromQuery] string? sortDirection,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetBookings([FromQuery] GetBookingsQuery query)
     {
-        var bookingsResult = await _bookingsGetterService.GetBookings(status, sortBy, sortDirection, page, pageSize);
-
-        return Ok(new
-        {
-            Bookings = bookingsResult.Items,
-            TotalCount = bookingsResult.TotalCount
-        });
+        var bookingsResult = await _bookingsGetterService.GetBookings(query.Status, query.SortBy, query.SortDirection, query.Page, query.PageSize);
+        return Ok(new BookingsResult(bookingsResult.Items, bookingsResult.TotalCount));
     }
 
     [HttpGet("{id}")]
