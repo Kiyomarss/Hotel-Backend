@@ -38,11 +38,11 @@ namespace Services
    return bookings.Select(b => b.ToBookingResponse()).ToList();
   }
   
-  public async Task<List<BookingResponse>> GetStaysAfterDate(DateTime date)
+  public async Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date)
   {
    var bookings = await _bookingsRepository.GetStaysAfterDate(date);
 
-   return bookings.Select(s => s.ToBookingResponse()).ToList();
+   return bookings.Select(s => new GetStaysAfterDateResult(s.Status, s.CreateAt.ToString())).ToList();
   }
   
   public async Task<List<GetStaysTodayActivityBookingResult>> GetStaysTodayActivity()
@@ -52,14 +52,14 @@ namespace Services
    return bookings.Select(s => new GetStaysTodayActivityBookingResult(s.Status, s.TotalPrice, s.NumGuests, s.Guest.CountryFlag)).ToList();
   }
 
-  public virtual async Task<BookingResponse?> GetBookingByBookingId(Guid bookingId)
+  public virtual async Task<GetBookingByBookingIdResult?> GetBookingByBookingId(Guid bookingId)
   {
    var booking = await _bookingsRepository.GetBookingByBookingId(bookingId);
    
    if (booking == null)
     throw new ArgumentException("Given Booking id doesn't exist");
 
-   return booking.ToBookingResponse();
+   return new GetBookingByBookingIdResult(booking.Status, booking.TotalPrice, booking.Cabin.Name, booking.Guest.CountryFlag, booking.Guest.Nationality);
   }
   
   public virtual async Task<Booking?> FindBookingById(Guid bookingId)

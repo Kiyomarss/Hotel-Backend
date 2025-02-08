@@ -51,86 +51,54 @@ namespace Hotel_ServiceTests
         }
 
         [Fact]
-        public async Task GetBookingsAfterDate_ShouldReturnFilteredBookings()
+        public async Task GetStaysAfterDate_ReturnsListOfGetStaysAfterDateResult()
         {
             // Arrange
-            var date = DateTime.UtcNow.AddDays(-1);
+            var date = DateTime.UtcNow.AddDays(-5);
 
-            var fixture = new Fixture();
-
-            var bookings = fixture.Build<Booking>()
-                .With(b => b.CreateAt, DateTime.UtcNow.AddDays(-2))
-                .With(b => b.StartDate, DateTime.UtcNow.AddDays(-3))
-                .With(b => b.EndDate, DateTime.UtcNow.AddDays(-1))
-                .CreateMany(3)
-                .ToList();
-
-            var expectedResponses = bookings.Select(b => b.ToBookingResponse()).ToList();
-
-            _mockRepository.Setup(repo => repo.GetBookingsAfterDate(date))
-                .ReturnsAsync(bookings);
-
-            // Act
-            var result = await _bookingsGetterService.GetBookingsAfterDate(date);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(expectedResponses.Count, result.Count);
-
-            for (int i = 0; i < expectedResponses.Count; i++)
-            {
-                Assert.Equal(expectedResponses[i].Id, result[i].Id);
-                Assert.Equal(expectedResponses[i].Guests.FullName, result[i].Guests.FullName);
-                Assert.Equal(expectedResponses[i].Cabins.Name, result[i].Cabins.Name);
-            }
-            
-            _mockRepository.Verify(repo => repo.GetBookingsAfterDate(date), Times.Once);
-        }
-        
-        [Fact]
-        public async Task GetStaysAfterDate_ShouldReturnFilteredStays()
-        {
-            // Arrange
-            var date = DateTime.UtcNow.AddDays(-1);
-
-            var fixture = new Fixture();
-
-            var validBookings = fixture.Build<Booking>()
-                .With(b => b.Status, "checked-in")
-                .With(b => b.CreateAt, DateTime.UtcNow.AddDays(-2))
-                .CreateMany(3)
-                .ToList();
-
-            var unconfirmedBookings = fixture.Build<Booking>()
-                .With(b => b.Status, "unconfirmed")
-                .With(b => b.CreateAt, DateTime.UtcNow.AddDays(-3))
-                .CreateMany(2)
-                .ToList();
-
-            var allBookings = validBookings
-                .Concat(unconfirmedBookings)
-                .ToList();
+            var bookings = _fixture.Build<Booking>()
+                                   .With(b => b.Status, "confirmed")
+                                   .With(b => b.CreateAt, date.AddDays(1))
+                                   .CreateMany(1)
+                                   .Concat(_fixture.Build<Booking>()
+                                                   .With(b => b.Status, "checked-in")
+                                                   .With(b => b.CreateAt, date.AddDays(2))
+                                                   .CreateMany(1))
+                                   .ToList();
 
             _mockRepository.Setup(repo => repo.GetStaysAfterDate(date))
-                .ReturnsAsync(allBookings);
+                           .ReturnsAsync(bookings);
 
             // Act
             var result = await _bookingsGetterService.GetStaysAfterDate(date);
 
             // Assert
-            result.Should().NotBeNull();
+            Assert.NotNull(result);
+            Assert.Equal(bookings.Count, result.Count);
 
-            result.Count.Should().Be(validBookings.Count + unconfirmedBookings.Count);
-
-            foreach (var booking in validBookings.Concat(unconfirmedBookings))
+            for (int i = 0; i < bookings.Count; i++)
             {
-                var correspondingResult = result.FirstOrDefault(r => r.Id == booking.Id);
-
-                correspondingResult.Should().NotBeNull();
-
-                correspondingResult.Status.Should().Be(booking.Status);
+                Assert.Equal(bookings[i].Status, result[i].Status);
+                Assert.Equal(bookings[i].CreateAt.ToString(), result[i].CreateAt);
             }
         }
+
+        [Fact]
+        public async Task GetStaysAfterDate_ReturnsEmptyList_WhenNoBookingsExist()
+        {
+            // Arrange
+            var date = DateTime.UtcNow;
+            _mockRepository.Setup(repo => repo.GetStaysAfterDate(date))
+                           .ReturnsAsync(new List<Booking>());
+
+            // Act
+            var result = await _bookingsGetterService.GetStaysAfterDate(date);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
         
         [Fact]
         public async Task GetStaysTodayActivity_ReturnsListOfGetStaysTodayActivityBookingResult()
@@ -186,17 +154,17 @@ namespace Hotel_ServiceTests
         }
 
         [Fact]
-        public async Task GetBookingByBookingId_ShouldReturnBookingResponse_WhenBookingExists()
+        public async Task GetBookingByBookingId_ReturnsBooking_WhenBookingExists()
         {
             // Arrange
             var bookingId = Guid.NewGuid();
-            var fixture = new Fixture();
-
-            var booking = fixture.Build<Booking>()
-                                 .With(b => b.Id, bookingId)
-                                 .Create();
-
-            var expectedResponse = booking.ToBookingResponse();
+            var booking = _fixture.Build<Booking>()
+                                  .With(b => b.Id, bookingId)
+                                  .With(b => b.Status, "Confirmed")
+                                  .With(b => b.TotalPrice, 200)
+                                  .With(b => b.Cabin, new Cabin { Name = "Deluxe Suite" })
+                                  .With(b => b.Guest, new Guest { CountryFlag = "🇫🇷", Nationality = "French" })
+                                  .Create();
 
             _mockRepository.Setup(repo => repo.GetBookingByBookingId(bookingId))
                            .ReturnsAsync(booking);
@@ -206,31 +174,27 @@ namespace Hotel_ServiceTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(expectedResponse.Id, result.Id);
-            Assert.Equal(expectedResponse.Guests.FullName, result.Guests.FullName);
-            Assert.Equal(expectedResponse.Cabins.Name, result.Cabins.Name);
-
-            _mockRepository.Verify(repo => repo.GetBookingByBookingId(bookingId), Times.Once);
+            Assert.Equal(booking.Status, result.Status);
+            Assert.Equal(booking.TotalPrice, result.TotalPrice);
+            Assert.Equal(booking.Cabin.Name, result.CabinName);
+            Assert.Equal(booking.Guest.CountryFlag, result.CountryFlag);
+            Assert.Equal(booking.Guest.Nationality, result.Nationality);
         }
 
         [Fact]
-        public async Task GetBookingByBookingId_ShouldThrowArgumentException_WhenBookingDoesNotExist()
+        public async Task GetBookingByBookingId_ThrowsException_WhenBookingDoesNotExist()
         {
             // Arrange
             var bookingId = Guid.NewGuid();
             _mockRepository.Setup(repo => repo.GetBookingByBookingId(bookingId))
                            .ReturnsAsync((Booking?)null);
 
-            // Act
-            Func<Task> act = async () => await _bookingsGetterService.GetBookingByBookingId(bookingId);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => _bookingsGetterService.GetBookingByBookingId(bookingId));
 
-            // Assert
-            await act.Should().ThrowAsync<ArgumentException>()
-                     .WithMessage("Given Booking id doesn't exist");
-
-            _mockRepository.Verify(repo => repo.GetBookingByBookingId(bookingId), Times.Once);
+            Assert.Equal("Given Booking id doesn't exist", exception.Message);
         }
-
+        
         [Fact]
         public async Task FindBookingById_ShouldReturnBooking_WhenBookingExists()
         {

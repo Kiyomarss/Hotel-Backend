@@ -11,4 +11,8 @@ public record BookingsResult(List<BookingResponse> Bookings, int TotalCount);
 
 public record DeleteBookingResult(bool IsDeleted);
 
-public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, int NumGuests, string? CountryFlag);
+public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, int NumGuests, string CountryFlag);
+
+public record GetStaysAfterDateResult(string Status, string CreateAt);
+
+public record GetBookingByBookingIdResult(string Status, int TotalPrice, string CabinName,  string CountryFlag, string Nationality);

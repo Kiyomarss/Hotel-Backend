@@ -29,14 +29,14 @@ public class BookingsController  : BaseController
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBooking(Guid id)
     {
-        var bookingResponse = await _bookingsGetterService.GetBookingByBookingId(id);
+        var result = await _bookingsGetterService.GetBookingByBookingId(id);
 
-        if (bookingResponse == null)
+        if (result == null)
         {
-            return NotFound(new { Message = "Booking not found" });
+            return NotFound(new ErrorResponse("Booking not found"));
         }
 
-        return Ok(new { booking = bookingResponse });
+        return Ok(result);
     }
     
     [HttpPatch("{id}")]
@@ -61,7 +61,8 @@ public class BookingsController  : BaseController
     public async Task<IActionResult> GetStaysAfterDate([FromQuery] DateTime date)
     {
         var bookingResponsesList = await _bookingsGetterService.GetStaysAfterDate(date);
-        return Ok(new { bookings = bookingResponsesList });
+
+        return Ok(bookingResponsesList);
     }
 
     [HttpGet]

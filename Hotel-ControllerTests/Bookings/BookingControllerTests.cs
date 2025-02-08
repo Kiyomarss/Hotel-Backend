@@ -21,6 +21,8 @@ public class BookingsControllerTests
 
     }
 
+    #region GetBookings
+
     [Fact]
     public async Task GetBookings_ReturnsOkResult_WithBookingsAndTotalCount()
     {
@@ -75,7 +77,11 @@ public class BookingsControllerTests
         Assert.Empty(returnValue.Bookings);
         Assert.Equal(0, returnValue.TotalCount);
     }
-    
+
+    #endregion
+
+    #region Delete
+
     [Fact]
     public async Task Delete_ReturnsOkResult_WithIsDeletedTrue()
     {
@@ -109,7 +115,11 @@ public class BookingsControllerTests
         var returnValue = Assert.IsType<DeleteBookingResult>(okResult.Value);
         Assert.False(returnValue.IsDeleted);
     }
-    
+
+    #endregion
+
+    #region GetStaysTodayActivity
+
     [Fact]
     public async Task GetStaysTodayActivity_ReturnsOkResult_WithExpectedData()
     {
@@ -131,5 +141,112 @@ public class BookingsControllerTests
         Assert.Equal(staysTodayActivity.Count, response.Count);
         Assert.Equal(staysTodayActivity, response);
     }
+
+    #endregion
+
+    #region GetBookingByBookingId
+
+    [Fact]
+    public async Task GetBooking_ReturnsOk_WhenBookingExists()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+        var bookingResponse = _fixture.Create<GetBookingByBookingIdResult>();
+
+        _mockBookingsGetterService.Setup(s => s.GetBookingByBookingId(bookingId))
+                                  .ReturnsAsync(bookingResponse);
+
+        // Act
+        var result = await _controller.GetBooking(bookingId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<GetBookingByBookingIdResult>(okResult.Value);
+
+        Assert.NotNull(response);
+        Assert.Equal(bookingResponse.Status, response.Status);
+        Assert.Equal(bookingResponse.TotalPrice, response.TotalPrice);
+        Assert.Equal(bookingResponse.CabinName, response.CabinName);
+        Assert.Equal(bookingResponse.CountryFlag, response.CountryFlag);
+        Assert.Equal(bookingResponse.Nationality, response.Nationality);
+    }
+
+    [Fact]
+    public async Task GetBooking_ReturnsNotFound_WhenBookingDoesNotExist()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+
+        _mockBookingsGetterService.Setup(s => s.GetBookingByBookingId(bookingId))
+                                  .ReturnsAsync((GetBookingByBookingIdResult?)null);
+
+        // Act
+        var result = await _controller.GetBooking(bookingId);
+
+        // Assert
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+        var response = Assert.IsType<ErrorResponse>(notFoundResult.Value);
+
+        Assert.Equal("Booking not found", response.Message);
+    }
+
+    #endregion
+
+    #region GetStaysAfterDate
+
+    [Fact]
+    public async Task GetStaysAfterDate_ReturnsOkResult_WithBookingData()
+    {
+        // Arrange
+        var date = DateTime.UtcNow.AddDays(-5);
+
+        var bookings = _fixture.Build<GetStaysAfterDateResult>()
+                               .With(b => b.Status, "confirmed")
+                               .With(b => b.CreateAt, date.AddDays(1).ToString())
+                               .CreateMany(2)
+                               .ToList();
+
+        _mockBookingsGetterService
+            .Setup(s => s.GetStaysAfterDate(date))
+            .ReturnsAsync(bookings);
+
+        // Act
+        var result = await _controller.GetStaysAfterDate(date);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<List<GetStaysAfterDateResult>>(okResult.Value);
+
+        Assert.NotNull(response);
+        Assert.Equal(bookings.Count, response.Count);
+
+        for (int i = 0; i < bookings.Count; i++)
+        {
+            Assert.Equal(bookings[i].Status, response[i].Status);
+            Assert.Equal(bookings[i].CreateAt, response[i].CreateAt);
+        }
+    }
+
+    [Fact]
+    public async Task GetStaysAfterDate_ReturnsEmptyList_WhenNoBookingsExist()
+    {
+        // Arrange
+        var date = DateTime.UtcNow;
+        _mockBookingsGetterService
+            .Setup(s => s.GetStaysAfterDate(date))
+            .ReturnsAsync(new List<GetStaysAfterDateResult>());
+
+        // Act
+        var result = await _controller.GetStaysAfterDate(date);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<List<GetStaysAfterDateResult>>(okResult.Value);
+
+        Assert.NotNull(response);
+        Assert.Empty(response);
+    }
+
+    #endregion
 
 }

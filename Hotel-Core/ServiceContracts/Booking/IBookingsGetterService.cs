@@ -6,7 +6,7 @@ namespace ServiceContracts;
 
 public interface IBookingsGetterService
 {
-    Task<BookingResponse?> GetBookingByBookingId(Guid bookingId);
+    Task<GetBookingByBookingIdResult?> GetBookingByBookingId(Guid bookingId);
 
     Task<Booking?> FindBookingById(Guid bookingId);
 
@@ -14,7 +14,7 @@ public interface IBookingsGetterService
     
     Task<List<BookingResponse>> GetBookingsAfterDate(DateTime date);
 
-    Task<List<BookingResponse>> GetStaysAfterDate(DateTime date);
+    Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date);
 
     Task<List<GetStaysTodayActivityBookingResult>> GetStaysTodayActivity();
 }
