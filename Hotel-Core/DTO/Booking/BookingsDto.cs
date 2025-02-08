@@ -8,3 +8,7 @@ public record GetBookingsQuery(
     int PageSize = 10);
 
 public record BookingsResult(List<BookingResponse> Bookings, int TotalCount);
+
+public record DeleteBookingResult(bool IsDeleted);
+
+public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, int NumGuests, string? CountryFlag);

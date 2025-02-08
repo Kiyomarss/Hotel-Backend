@@ -16,5 +16,5 @@ public interface IBookingsGetterService
 
     Task<List<BookingResponse>> GetStaysAfterDate(DateTime date);
 
-    Task<List<BookingResponse>> GetStaysTodayActivity();
+    Task<List<GetStaysTodayActivityBookingResult>> GetStaysTodayActivity();
 }

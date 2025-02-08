@@ -67,14 +67,15 @@ public class BookingsController  : BaseController
     [HttpGet]
     public async Task<IActionResult> GetStaysTodayActivity()
     {
-        var bookingResponsesList = await _bookingsGetterService.GetStaysTodayActivity();
-        return Ok(new { bookings = bookingResponsesList });
+        var todayActivity = await _bookingsGetterService.GetStaysTodayActivity();
+
+        return Ok(todayActivity);
     }
     
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleteBooking = await _bookingsDeleterService.DeleteBooking(id);
-        return Ok(new { isDeleted = deleteBooking });
+        return Ok(new DeleteBookingResult(deleteBooking));
     }
 }

@@ -45,11 +45,11 @@ namespace Services
    return bookings.Select(s => s.ToBookingResponse()).ToList();
   }
   
-  public async Task<List<BookingResponse>> GetStaysTodayActivity()
+  public async Task<List<GetStaysTodayActivityBookingResult>> GetStaysTodayActivity()
   {
    var bookings = await _bookingsRepository.GetStaysTodayActivity();
 
-   return bookings.Select(s => s.ToBookingResponse()).ToList();
+   return bookings.Select(s => new GetStaysTodayActivityBookingResult(s.Status, s.TotalPrice, s.NumGuests, s.Guest.CountryFlag)).ToList();
   }
 
   public virtual async Task<BookingResponse?> GetBookingByBookingId(Guid bookingId)

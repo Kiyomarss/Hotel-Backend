@@ -133,42 +133,56 @@ namespace Hotel_ServiceTests
         }
         
         [Fact]
-        public async Task GetStaysTodayActivity_ShouldReturnFilteredBookingsBasedOnStatus()
+        public async Task GetStaysTodayActivity_ReturnsListOfGetStaysTodayActivityBookingResult()
         {
-            var today = DateTime.UtcNow.Date;
-            var fixture = new Fixture();
+            // Arrange
+            var statuses = new[] { "checked-out", "checked-in" };
+            var countryFlags = new[] { "🇺🇸", "🇬🇧" };
+            var totalPrices = new[] { 100, 150 };
+            var numGuests = new[] { 2, 3 };
 
-            var bookings = fixture.Build<Booking>()
-                                  .With(b => b.Status, "unconfirmed")
-                                  .With(b => b.StartDate, today.AddDays(-1))
-                                  .With(b => b.EndDate, today.AddDays(1))
-                                  .CreateMany(2)
-                                  .Union(
-                                         fixture.Build<Booking>()
-                                                .With(b => b.Status, "checked-in")
-                                                .With(b => b.StartDate, today.AddDays(-2))
-                                                .With(b => b.EndDate, today)
-                                                .CreateMany(3)
-                                        ).ToList();
-
-            var expectedResponses = bookings.Select(b => b.ToBookingResponse()).ToList();
+            var bookings = statuses
+                           .Select((status, index) => _fixture.Build<Booking>()
+                                                              .With(b => b.Status, status)
+                                                              .With(b => b.TotalPrice, totalPrices[index])
+                                                              .With(b => b.NumGuests, numGuests[index])
+                                                              .With(b => b.Guest, new Guest { CountryFlag = countryFlags[index] })
+                                                              .Create())
+                           .ToList();
 
             _mockRepository.Setup(repo => repo.GetStaysTodayActivity())
                            .ReturnsAsync(bookings);
 
+            // Act
             var result = await _bookingsGetterService.GetStaysTodayActivity();
 
+            // Assert
             Assert.NotNull(result);
-            Assert.Equal(expectedResponses.Count, result.Count);
+            Assert.Equal(bookings.Count, result.Count);
 
-            for (int i = 0; i < expectedResponses.Count; i++)
+            result.Zip(bookings, (actual, expected) =>
             {
-                Assert.Equal(expectedResponses[i].Id, result[i].Id);
-                Assert.Equal(expectedResponses[i].Guests.FullName, result[i].Guests.FullName);
-                Assert.Equal(expectedResponses[i].Cabins.Name, result[i].Cabins.Name);
-            }
+                Assert.Equal(expected.Status, actual.Status);
+                Assert.Equal(expected.TotalPrice, actual.TotalPrice);
+                Assert.Equal(expected.NumGuests, actual.NumGuests);
+                Assert.Equal(expected.Guest.CountryFlag, actual.CountryFlag);
+                return true;
+            }).ToList();
+        }
 
-            _mockRepository.Verify(repo => repo.GetStaysTodayActivity(), Times.Once);
+        [Fact]
+        public async Task GetStaysTodayActivity_ReturnsEmptyList_WhenNoBookingsExist()
+        {
+            // Arrange
+            _mockRepository.Setup(repo => repo.GetStaysTodayActivity())
+                .ReturnsAsync(new List<Booking>());
+
+            // Act
+            var result = await _bookingsGetterService.GetStaysTodayActivity();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
         }
 
         [Fact]
