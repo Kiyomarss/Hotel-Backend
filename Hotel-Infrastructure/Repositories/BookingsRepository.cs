@@ -24,13 +24,16 @@ namespace Hotel_Infrastructure.Repositories
         
         public async Task<Booking?> GetBookingByBookingId(Guid bookingId)
         {
-            var booking = await _db.Set<Booking>()
-                .Include(b => b.Guest)
-                .Include(b => b.Cabin)
-                .FirstOrDefaultAsync(b => b.Id == bookingId);
-            
+            var booking = await _db.Set<Booking>().FirstOrDefaultAsync(b => b.Id == bookingId);
+    
+            if (booking == null) return null;
+
+            await _db.Entry(booking).Reference(b => b.Guest).LoadAsync();
+            await _db.Entry(booking).Reference(b => b.Cabin).LoadAsync();
+
             return booking;
         }
+
         
         public async Task<Booking?> FindBookingById(Guid bookingId)
         {
@@ -76,22 +79,23 @@ namespace Hotel_Infrastructure.Repositories
        public async Task<List<Booking>> GetStaysAfterDate(DateTime date)
         {
             return await _db.Set<Booking>()
-                .Include(b => b.Guest)
-                .Include(b => b.Cabin)
                 .Where(b => (b.Status == "checked-in" || b.Status == "unconfirmed"))
                 .ToListAsync();
         }
         
         public async Task<List<Booking>> GetStaysTodayActivity()
         {
-            return await _db.Set<Booking>()
-                .Include(b => b.Guest)
-                .Include(b => b.Cabin)
-                .Where(b =>
-                    (b.Status == "unconfirmed" /*&& b.StartDate.Date == DateTime.UtcNow.Date*/) ||
-                    (b.Status == "checked-in" /*&& b.EndDate.Date == DateTime.UtcNow.Date*/))
-                .OrderBy(b => b.CreateAt)
-                .ToListAsync();
+            var bookings = await _db.Set<Booking>()
+                                    .Where(b =>b.Status == "unconfirmed" || b.Status == "checked-in")
+                                    .OrderBy(b => b.CreateAt)
+                                    .ToListAsync();
+
+            foreach (var booking in bookings)
+            {
+                await _db.Entry(booking).Reference(b => b.Guest).LoadAsync();
+            }
+
+            return bookings;
         }
 
         public Task<Booking> UpdateBooking(Booking booking)

@@ -3,6 +3,7 @@ using Entities;
 using Hotel_Core.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using RepositoryContracts;
 
@@ -13,6 +14,9 @@ namespace Hotel_Infrastructure.DbContext
   public ApplicationDbContext(DbContextOptions options) : base(options) { }
   
   public DatabaseFacade Database => base.Database;
+  
+  public new EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class => base.Entry(entity);
+
   
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
