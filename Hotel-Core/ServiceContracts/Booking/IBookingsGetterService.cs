@@ -6,7 +6,7 @@ namespace ServiceContracts;
 
 public interface IBookingsGetterService
 {
-    Task<GetBookingByBookingIdResult?> GetBookingByBookingId(Guid bookingId);
+    Task<BookingResult?> GetBookingByBookingId(Guid bookingId);
 
     Task<Booking?> FindBookingById(Guid bookingId);
 

@@ -24,7 +24,7 @@ namespace Services
             _logger = logger;
         }
 
-        public async Task<BookingResponse> UpdateBooking(Guid bookingId, JsonPatchDocument<Booking> patchDoc)
+        public async Task<BookingResult> UpdateBooking(Guid bookingId, JsonPatchDocument<Booking> patchDoc)
         {
             if (patchDoc == null)
                 throw new ArgumentNullException(nameof(patchDoc));
@@ -42,7 +42,7 @@ namespace Services
             {
                 var updatedBooking = await _bookingsRepository.UpdateBooking(matchingBooking);
 
-                return updatedBooking.ToBookingResponse();
+                return new BookingResult(updatedBooking.Status, updatedBooking.TotalPrice, updatedBooking.Cabin.Name, updatedBooking.Guest.CountryFlag, updatedBooking.Guest.Nationality);
             });
         }
 

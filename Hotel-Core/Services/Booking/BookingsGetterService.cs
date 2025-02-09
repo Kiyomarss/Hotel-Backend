@@ -45,14 +45,14 @@ namespace Services
    return bookings.Select(s => new GetStaysTodayActivityBookingResult(s.Status, s.TotalPrice, s.NumGuests, s.Guest.CountryFlag)).ToList();
   }
 
-  public virtual async Task<GetBookingByBookingIdResult?> GetBookingByBookingId(Guid bookingId)
+  public virtual async Task<BookingResult?> GetBookingByBookingId(Guid bookingId)
   {
    var booking = await _bookingsRepository.GetBookingByBookingId(bookingId);
    
    if (booking == null)
     throw new ArgumentException("Given Booking id doesn't exist");
 
-   return new GetBookingByBookingIdResult(booking.Status, booking.TotalPrice, booking.Cabin.Name, booking.Guest.CountryFlag, booking.Guest.Nationality);
+   return new BookingResult(booking.Status, booking.TotalPrice, booking.Cabin.Name, booking.Guest.CountryFlag, booking.Guest.Nationality);
   }
   
   public virtual async Task<Booking?> FindBookingById(Guid bookingId)

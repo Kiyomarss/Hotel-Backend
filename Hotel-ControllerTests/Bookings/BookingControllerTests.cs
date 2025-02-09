@@ -145,7 +145,7 @@ public class BookingsControllerTests
     {
         // Arrange
         var bookingId = Guid.NewGuid();
-        var bookingResponse = _fixture.Create<GetBookingByBookingIdResult>();
+        var bookingResponse = _fixture.Create<BookingResult>();
 
         _mockBookingsGetterService.Setup(s => s.GetBookingByBookingId(bookingId))
                                   .ReturnsAsync(bookingResponse);
@@ -155,7 +155,7 @@ public class BookingsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<GetBookingByBookingIdResult>(okResult.Value);
+        var response = Assert.IsType<BookingResult>(okResult.Value);
 
         Assert.NotNull(response);
         Assert.Equal(bookingResponse.Status, response.Status);
@@ -172,7 +172,7 @@ public class BookingsControllerTests
         var bookingId = Guid.NewGuid();
 
         _mockBookingsGetterService.Setup(s => s.GetBookingByBookingId(bookingId))
-                                  .ReturnsAsync((GetBookingByBookingIdResult?)null);
+                                  .ReturnsAsync((BookingResult?)null);
 
         // Act
         var result = await _controller.GetBooking(bookingId);
