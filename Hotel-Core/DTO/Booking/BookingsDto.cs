@@ -7,7 +7,9 @@ public record GetBookingsQuery(
     int Page = 1,
     int PageSize = 10);
 
-public record BookingsResult(List<BookingResponse> Bookings, int TotalCount);
+public record BookingsResult(List<BookingsItemResult> Bookings, int TotalCount);
+
+public record BookingsItemResult(string Status, int TotalPrice, string CabinName, string CountryFlag, string CreateAt);
 
 public record DeleteBookingResult(bool IsDeleted);
 

@@ -28,17 +28,11 @@ public class BookingsControllerTests
     {
         // Arrange
         var query = new GetBookingsQuery(null, null, null, 1, 10);
-        var bookings = new List<BookingResponse>
-        {
-            new BookingResponse
-            {
-                Id = Guid.NewGuid(), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(1)
-            }
-        };
+        var bookings = _fixture.CreateMany<BookingsItemResult>(2).ToList();
 
-        var paginatedResult = new PaginatedResult<BookingResponse>
+        var paginatedResult = new PaginatedResult<BookingsItemResult>
         {
-            Items = bookings, TotalCount = 1
+            Items = bookings, TotalCount = 2
         };
 
         _mockBookingsGetterService.Setup(service => service.GetBookings(query.Status, query.SortBy, query.SortDirection, query.Page, query.PageSize)).ReturnsAsync(paginatedResult);
@@ -51,7 +45,7 @@ public class BookingsControllerTests
         var returnValue = Assert.IsType<BookingsResult>(okResult.Value);
 
         Assert.Equal(bookings, returnValue.Bookings);
-        Assert.Equal(1, returnValue.TotalCount);
+        Assert.Equal(2, returnValue.TotalCount);
     }
     
     [Fact]
@@ -59,9 +53,9 @@ public class BookingsControllerTests
     {
         // Arrange
         var query = new GetBookingsQuery(null, null, null, 1, 10);
-        var paginatedResult = new PaginatedResult<BookingResponse>
+        var paginatedResult = new PaginatedResult<BookingsItemResult>
         {
-            Items = new List<BookingResponse>(),
+            Items = new List<BookingsItemResult>(),
             TotalCount = 0
         };
 

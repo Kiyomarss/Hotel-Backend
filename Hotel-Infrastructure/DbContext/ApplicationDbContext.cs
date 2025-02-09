@@ -16,7 +16,6 @@ namespace Hotel_Infrastructure.DbContext
   public DatabaseFacade Database => base.Database;
   
   public new EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class => base.Entry(entity);
-
   
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

@@ -10,7 +10,7 @@ public interface IBookingsGetterService
 
     Task<Booking?> FindBookingById(Guid bookingId);
 
-    Task<PaginatedResult<BookingResponse>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
+    Task<PaginatedResult<BookingsItemResult>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
     
     Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date);
 

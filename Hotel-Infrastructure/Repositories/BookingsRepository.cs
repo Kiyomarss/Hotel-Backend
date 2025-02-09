@@ -65,10 +65,14 @@ namespace Hotel_Infrastructure.Repositories
             var bookings = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Include(b => b.Guest)
-                .Include(b => b.Cabin)
                 .ToListAsync();
 
+            foreach (var booking in bookings)
+            {
+                await _db.Entry(booking).Reference(b => b.Guest).LoadAsync();
+                await _db.Entry(booking).Reference(b => b.Cabin).LoadAsync();
+            }
+            
             return new PaginatedResult<Booking>
             {
                 Items = bookings,

@@ -20,13 +20,13 @@ namespace Services
    _logger = logger;
   }
   
-  public virtual async Task<PaginatedResult<BookingResponse>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
+  public virtual async Task<PaginatedResult<BookingsItemResult>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize)
   {
    var paginatedResult = await _bookingsRepository.GetBookings(status, sortBy, sortDirection, page, pageSize);
 
-   return new PaginatedResult<BookingResponse>
+   return new PaginatedResult<BookingsItemResult>
    {
-    Items = paginatedResult.Items.Select(b => b.ToBookingResponse()).ToList(),
+    Items = paginatedResult.Items.Select(s => new BookingsItemResult(s.Status, s.TotalPrice, s.Cabin.Name, s.Guest.CountryFlag, s.CreateAt.ToString())).ToList(),
     TotalCount = paginatedResult.TotalCount
    };
   }
