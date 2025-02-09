@@ -31,14 +31,7 @@ namespace Services
    };
   }
   
-  public async Task<List<BookingResponse>> GetBookingsAfterDate(DateTime date)
-  {
-   var bookings = await _bookingsRepository.GetBookingsAfterDate(date);
-
-   return bookings.Select(b => b.ToBookingResponse()).ToList();
-  }
-  
-  public async Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date)
+ public async Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date)
   {
    var bookings = await _bookingsRepository.GetStaysAfterDate(date);
 

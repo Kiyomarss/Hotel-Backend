@@ -12,8 +12,6 @@ public interface IBookingsGetterService
 
     Task<PaginatedResult<BookingResponse>> GetBookings(string? status, string? sortBy, string? sortDirection, int page, int pageSize);
     
-    Task<List<BookingResponse>> GetBookingsAfterDate(DateTime date);
-
     Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date);
 
     Task<List<GetStaysTodayActivityBookingResult>> GetStaysTodayActivity();

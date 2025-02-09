@@ -73,16 +73,7 @@ namespace Hotel_Infrastructure.Repositories
             };
         }
 
-        public async Task<List<Booking>> GetBookingsAfterDate(DateTime date)
-        {
-            return await _db.Set<Booking>()
-                .Include(b => b.Guest)
-                .Include(b => b.Cabin)
-                .Where(b => b.CreateAt >= date && b.CreateAt <= DateTime.UtcNow)
-                .ToListAsync();
-        }
-        
-        public async Task<List<Booking>> GetStaysAfterDate(DateTime date)
+       public async Task<List<Booking>> GetStaysAfterDate(DateTime date)
         {
             return await _db.Set<Booking>()
                 .Include(b => b.Guest)
