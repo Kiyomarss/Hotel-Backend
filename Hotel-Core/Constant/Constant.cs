@@ -6,4 +6,10 @@ public abstract class Constant
     {
         public const string Hostname = "localhost";
     }
+    
+    public abstract class Role
+    {
+        public const string Admin = nameof(Admin);
+        public const string User = nameof(User);
+    }
 }

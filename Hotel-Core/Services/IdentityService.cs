@@ -55,5 +55,31 @@ namespace Hotel_Core.Services
             var user = await _userManager.FindByIdAsync(userId);
             return user != null && await _userManager.IsInRoleAsync(user, roleName);
         }
+        
+        public bool IsUserLoggedIn()
+        {
+            return !string.IsNullOrEmpty(GetLoggedInUserId());
+        }
+        
+        public async Task<IList<string>> GetCurrentUserRolesAsync()
+        {
+            var userId = GetLoggedInUserId();
+            if (string.IsNullOrEmpty(userId))
+                return new List<string>();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            return user != null ? await _userManager.GetRolesAsync(user) : new List<string>();
+        }
+        
+        public async Task<bool> CurrentUserHasAllRolesAsync(params string[] roleNames)
+        {
+            var userRoles = await GetCurrentUserRolesAsync();
+            return roleNames.All(userRoles.Contains);
+        }
+
+        public async Task<bool> IsCurrentUserAdminAsync()
+        {
+            return await CurrentUserHasRoleAsync(Constant.Constant.Role.Admin);
+        }
     }
 }

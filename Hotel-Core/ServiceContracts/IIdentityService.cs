@@ -10,5 +10,13 @@ namespace Hotel_Core.ServiceContracts
         Task<bool> CurrentUserHasAnyRoleAsync(params string[] roleNames);
 
         Task<bool> CurrentUserHasRoleAsync(string roleName);
+
+        bool IsUserLoggedIn();
+
+        Task<IList<string>> GetCurrentUserRolesAsync();
+
+        Task<bool> CurrentUserHasAllRolesAsync(params string[] roleNames);
+        
+        Task<bool> IsCurrentUserAdminAsync();
     }
 }
