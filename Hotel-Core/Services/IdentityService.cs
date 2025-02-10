@@ -17,15 +17,43 @@ namespace Hotel_Core.Services
             _userManager = userManager;
         }
 
-        public async Task<ApplicationUser?> GetCurrentUserAsync()
+        public string? GetLoggedInUserId()
         {
             var user = _httpContextAccessor.HttpContext?.User;
-            var userId = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            return user?.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
 
+        public async Task<ApplicationUser?> GetCurrentUserAsync()
+        {
+            var userId = GetLoggedInUserId();
             if (string.IsNullOrEmpty(userId))
                 return null;
 
             return await _userManager.FindByIdAsync(userId);
+        }
+
+        public async Task<bool> CurrentUserHasAnyRoleAsync(params string[] roleNames)
+        {
+            var userId = GetLoggedInUserId();
+            if (string.IsNullOrEmpty(userId))
+                return false;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            return userRoles.Any(roleNames.Contains);
+        }
+        
+        public async Task<bool> CurrentUserHasRoleAsync(string roleName)
+        {
+            var userId = GetLoggedInUserId();
+            if (string.IsNullOrEmpty(userId))
+                return false;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            return user != null && await _userManager.IsInRoleAsync(user, roleName);
         }
     }
 }
