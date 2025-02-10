@@ -41,6 +41,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -74,7 +76,7 @@ builder.Services.AddSwaggerGen(options =>
         Name = "Authorization",
         Description = "Enter the JWT token: Bearer {your_token}",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
+        Type = SecuritySchemeType.ApiKey,
         Scheme = "bearer",
         BearerFormat = "JWT"
     };

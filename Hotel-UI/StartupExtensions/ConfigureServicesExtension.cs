@@ -26,6 +26,8 @@ namespace Hotel_UI
    
    services.AddScoped<IUnitOfWork, UnitOfWork>();
    
+   services.AddScoped<IAuthService, AuthService>();
+   
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
    services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
