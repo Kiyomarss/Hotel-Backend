@@ -36,6 +36,7 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await _authService.LogoutAsync();
@@ -46,12 +47,7 @@ namespace Hotel_UI.Controllers
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> UpdateCurrentUser(UpdateUserRequest request)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized(ResultDto<string>.Failure("User is not authenticated."));
-
-            var result = await _authService.UpdateUserAsync(userId, request);
+            var result = await _authService.UpdateUserAsync(request);
             
             if (!result.IsSuccess)
                 return BadRequest(ResultDto<string>.Failure(result.Message));
@@ -63,14 +59,10 @@ namespace Hotel_UI.Controllers
         [Consumes("application/octet-stream")]
         public async Task<IActionResult> UpdateAvatar()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized(ResultDto<string>.Failure("User is not authenticated."));
-
             if (Request.ContentLength is null or 0)
                 return BadRequest(ResultDto<string>.Failure("No avatar file provided."));
 
-            var result = await _authService.UpdateAvatarAsync(userId, Request.Body);
+            var result = await _authService.UpdateAvatarAsync(Request.Body);
             
             if (!result.IsSuccess)
                 return BadRequest(ResultDto<string>.Failure(result.Message));

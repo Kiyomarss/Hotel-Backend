@@ -15,12 +15,14 @@ namespace Hotel_Core.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IIdentityService _identityService;
         private readonly IConfiguration _configuration;
 
-        public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+        public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IIdentityService identityService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _identityService = identityService ;
             _configuration = configuration;
         }
 
@@ -93,9 +95,10 @@ namespace Hotel_Core.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
         
-    public async Task<ResultDto<UserDto>> UpdateUserAsync(string userId, UpdateUserRequest request)
+    public async Task<ResultDto<UserDto>> UpdateUserAsync(UpdateUserRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _identityService.GetCurrentUserAsync();
+        
         if (user == null)
             return ResultDto<UserDto>.Failure("User not found.");
 
@@ -122,9 +125,10 @@ namespace Hotel_Core.Services
         return ResultDto<UserDto>.Success(new UserDto(user.PersonName, user.Email, user.AvatarPath));
     }
 
-    public async Task<ResultDto<string>> UpdateAvatarAsync(string userId, Stream avatarStream)
+    public async Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _identityService.GetCurrentUserAsync();
+        
         if (user == null)
             return ResultDto<string>.Failure("User not found.");
 

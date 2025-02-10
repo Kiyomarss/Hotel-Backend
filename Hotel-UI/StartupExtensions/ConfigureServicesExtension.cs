@@ -21,13 +21,16 @@ namespace Hotel_UI
   {
    services.AddControllers();
    
-   //add services into IoC container
+   services.AddHttpContextAccessor();
+   
    services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
    
    services.AddScoped<IUnitOfWork, UnitOfWork>();
    
    services.AddScoped<IAuthService, AuthService>();
    
+   services.AddScoped<IIdentityService, IdentityService>();
+
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
    services.AddScoped<IBookingsDeleterService, BookingsDeleterService>();
