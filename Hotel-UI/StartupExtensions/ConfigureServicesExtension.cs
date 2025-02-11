@@ -33,6 +33,7 @@ namespace Hotel_UI
    services.AddScoped<IUserClaimService, UserClaimService>();
    
    services.AddScoped<IIdentityService, IdentityService>();
+   services.AddScoped<IUserLoginService, UserLoginService>();
    services.AddScoped<IUserTokenService, UserTokenService>();
 
 
