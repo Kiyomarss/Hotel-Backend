@@ -31,8 +31,10 @@ namespace Hotel_UI
    
    services.AddScoped<IRoleClaimService, RoleRoleClaimService>();
    services.AddScoped<IUserClaimService, UserClaimService>();
-
+   
    services.AddScoped<IIdentityService, IdentityService>();
+   services.AddScoped<IUserTokenService, UserTokenService>();
+
 
    services.AddScoped<IBookingsRepository, BookingsRepository>();
    services.AddScoped<IBookingsGetterService, BookingsGetterService>();
