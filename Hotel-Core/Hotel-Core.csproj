@@ -9,7 +9,9 @@
 
     <ItemGroup>
       <Folder Include="Enums\" />
+      <Folder Include="ServiceContracts\Authorization\" />
       <Folder Include="ServiceContracts\Guest\" />
+      <Folder Include="Services\Authorization\" />
       <Folder Include="Services\Guest\" />
     </ItemGroup>
 
