@@ -81,5 +81,16 @@ namespace Hotel_Core.Services
         {
             return await CurrentUserHasRoleAsync(Constant.Constant.Role.Admin);
         }
+        
+        public async Task<bool> HasAccessAsync(string requiredPermission)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+                return false;
+
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            return claims.Any(c => c is { Type: "FullAccess", Value: "true" }) || claims.Any(c => c.Type == "Permission" && c.Value == requiredPermission);
+        }
     }
 }

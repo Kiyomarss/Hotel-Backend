@@ -18,5 +18,7 @@ namespace Hotel_Core.ServiceContracts
         Task<bool> CurrentUserHasAllRolesAsync(params string[] roleNames);
         
         Task<bool> IsCurrentUserAdminAsync();
+
+        Task<bool> HasAccessAsync(string requiredPermission);
     }
 }
