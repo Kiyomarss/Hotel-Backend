@@ -2,7 +2,7 @@ using System.Security.Claims;
 
 namespace Hotel_Core.ServiceContracts
 {
-    public interface IClaimService
+    public interface IRoleClaimService
     {
         Task<bool> AddClaimToRoleAsync(string roleName, string claimType, string claimValue);
 
