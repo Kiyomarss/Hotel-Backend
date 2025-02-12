@@ -90,7 +90,7 @@ namespace Hotel_Core.Services
 
             var claims = await _userManager.GetClaimsAsync(user);
 
-            return claims.Any(c => c is { Type: "FullAccess", Value: "true" }) || claims.Any(c => c.Type == "Permission" && c.Value == requiredPermission);
+            return claims.Any(c => c is { Type: Constant.Constant.Claims.FullAccess, Value: "true" }) || claims.Any(c => c.Type == "Permission" && c.Value == requiredPermission);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Hotel_UI
    
    services.AddScoped<IAuthService, AuthService>();
    
-   services.AddScoped<IRoleClaimService, RoleRoleClaimService>();
+   services.AddScoped<IRoleClaimService, RoleClaimService>();
    services.AddScoped<IUserClaimService, UserClaimService>();
    
    services.AddScoped<IIdentityService, IdentityService>();

@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Hotel_Core.Services
 {
-    public class RoleRoleClaimService : IRoleClaimService
+    public class RoleClaimService : IRoleClaimService
     {
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public RoleRoleClaimService(RoleManager<IdentityRole> roleManager)
+        public RoleClaimService(RoleManager<IdentityRole> roleManager)
         {
             _roleManager = roleManager;
         }
