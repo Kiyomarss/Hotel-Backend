@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Core.ServiceContracts;
 using Microsoft.AspNetCore.Identity;
 
@@ -9,9 +10,9 @@ namespace Hotel_Core.Services
 {
     public class RoleClaimService : IRoleClaimService
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public RoleClaimService(RoleManager<IdentityRole> roleManager)
+        public RoleClaimService(RoleManager<ApplicationRole> roleManager)
         {
             _roleManager = roleManager;
         }
