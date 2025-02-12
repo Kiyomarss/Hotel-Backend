@@ -69,5 +69,18 @@ namespace Hotel_UI.Controllers
 
             return Ok(result);
         }
+        
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            var result = await _authService.DeleteUserAsync(userId);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(ResultDto<string>.Failure(result.Message));
+            }
+
+            return Ok(result);
+        }
     }
 }

@@ -155,6 +155,15 @@ namespace Hotel_Core.Services
 
         return $"/avatars/{fileName}";
     }
+    
+    public async Task<ResultDto<bool>> DeleteUserAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return ResultDto<bool>.Failure("User not found.");
 
+        var result = await _userManager.DeleteAsync(user);
+        return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("Failed to delete user.");
+    }
     }
 }

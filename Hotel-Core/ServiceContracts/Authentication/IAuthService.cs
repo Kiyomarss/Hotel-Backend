@@ -15,4 +15,6 @@ public interface IAuthService
     Task<ResultDto<UserDto>> UpdateUserAsync(UpdateUserRequest request);
     
     Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream);
+
+    Task<ResultDto<bool>> DeleteUserAsync(string userId);
 }
