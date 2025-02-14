@@ -77,10 +77,10 @@ namespace Hotel_UI.Controllers
 
             if (!result.IsSuccess)
             {
-                return BadRequest(ResultDto<string>.Failure(result.Message));
+                return BadRequest(new MessageResponse(result.Message));
             }
 
-            return Ok(result);
+            return Ok(new MessageResponse(result.Message));
         }
     }
 }

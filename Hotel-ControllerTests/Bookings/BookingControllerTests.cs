@@ -179,7 +179,7 @@ public class BookingsControllerTests
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-        var response = Assert.IsType<ErrorResponse>(notFoundResult.Value);
+        var response = Assert.IsType<MessageResponse>(notFoundResult.Value);
 
         Assert.Equal("Booking not found", response.Message);
     }

@@ -33,7 +33,7 @@ public class BookingsController  : BaseController
 
         if (result == null)
         {
-            return NotFound(new ErrorResponse("Booking not found"));
+            return NotFound(new MessageResponse("Booking not found"));
         }
 
         return Ok(result);
