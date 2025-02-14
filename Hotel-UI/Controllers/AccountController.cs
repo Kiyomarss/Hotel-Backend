@@ -28,11 +28,8 @@ namespace Hotel_UI.Controllers
         public async Task<IActionResult> Login(LoginRequest request)
         {
             var result = await _authService.LoginAsync(request);
-    
-            if (!result.IsSuccess)
-                return Unauthorized(new MessageResponse(result.Message));
 
-            return Ok(new DataResponse<LoginResult>(result.Data));
+            return result.IsSuccess ? Ok(new DataResponse<LoginResult>(result.Data)) : Unauthorized(new MessageResponse(result.Message));
         }
 
         [HttpPost]
@@ -48,11 +45,8 @@ namespace Hotel_UI.Controllers
         public async Task<IActionResult> UpdateCurrentUser(UpdateUserRequest request)
         {
             var result = await _authService.UpdateUserAsync(request);
-            
-            if (!result.IsSuccess)
-                return BadRequest(new MessageResponse(result.Message));
 
-            return Ok(new DataResponse<UserDto>(result.Data));
+            return result.IsSuccess ? Ok(new DataResponse<UserDto>(result.Data)) : BadRequest(new MessageResponse(result.Message));
         }
 
         [HttpPost]
@@ -63,11 +57,8 @@ namespace Hotel_UI.Controllers
                 return BadRequest(new MessageResponse("No avatar file provided."));
 
             var result = await _authService.UpdateAvatarAsync(Request.Body);
-            
-            if (!result.IsSuccess)
-                return BadRequest(new MessageResponse(result.Message));
 
-            return Ok(new DataResponse<string>(result.Data));
+            return result.IsSuccess ? Ok(new DataResponse<string>(result.Data)) : BadRequest(new MessageResponse(result.Message));
         }
         
         [HttpDelete("{userId}")]
@@ -75,12 +66,7 @@ namespace Hotel_UI.Controllers
         {
             var result = await _authService.DeleteUserAsync(userId);
 
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new MessageResponse(result.Message));
-            }
-
-            return Ok(new MessageResponse(result.Message));
+            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
         }
     }
 }
