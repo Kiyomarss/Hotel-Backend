@@ -41,7 +41,7 @@ namespace Hotel_Core.Services
             var result = await _userManager.CreateAsync(user);
 
             return result.Succeeded
-                       ? ResultDto<string>.Success(null)
+                       ? ResultDto<string>.Success(null, "Update Success.")
                        : ResultDto<string>.Failure("Update Failed.");
         }
 

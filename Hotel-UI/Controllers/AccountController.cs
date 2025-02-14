@@ -21,7 +21,7 @@ namespace Hotel_UI.Controllers
         {
             var result = await _authService.SignupAsync(request);
 
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
         }
 
         [HttpPost]
@@ -30,9 +30,9 @@ namespace Hotel_UI.Controllers
             var result = await _authService.LoginAsync(request);
     
             if (!result.IsSuccess)
-                return Unauthorized(ResultDto<string>.Failure(result.Message));
+                return Unauthorized(new MessageResponse(result.Message));
 
-            return Ok(result);
+            return Ok(new DataResponse<LoginResult>(result.Data));
         }
 
         [HttpPost]
@@ -40,7 +40,7 @@ namespace Hotel_UI.Controllers
         public async Task<IActionResult> Logout()
         {
             await _authService.LogoutAsync();
-            return Ok(ResultDto<string>.Success("Logout successful."));
+            return Ok(new DataResponse<string>("Logout successful."));
         }
         
         [HttpPost]
@@ -50,9 +50,9 @@ namespace Hotel_UI.Controllers
             var result = await _authService.UpdateUserAsync(request);
             
             if (!result.IsSuccess)
-                return BadRequest(ResultDto<string>.Failure(result.Message));
+                return BadRequest(new MessageResponse(result.Message));
 
-            return Ok(result);
+            return Ok(new DataResponse<UserDto>(result.Data));
         }
 
         [HttpPost]
@@ -60,14 +60,14 @@ namespace Hotel_UI.Controllers
         public async Task<IActionResult> UpdateAvatar()
         {
             if (Request.ContentLength is null or 0)
-                return BadRequest(ResultDto<string>.Failure("No avatar file provided."));
+                return BadRequest(new MessageResponse("No avatar file provided."));
 
             var result = await _authService.UpdateAvatarAsync(Request.Body);
             
             if (!result.IsSuccess)
-                return BadRequest(ResultDto<string>.Failure(result.Message));
+                return BadRequest(new MessageResponse(result.Message));
 
-            return Ok(result);
+            return Ok(new DataResponse<string>(result.Data));
         }
         
         [HttpDelete("{userId}")]

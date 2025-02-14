@@ -13,6 +13,6 @@ public class ResultDto<T>
         Data = data;
     }
 
-    public static ResultDto<T> Success(T data, string message = "Operation successful.") => new(true, message, data);
+    public static ResultDto<T> Success(T? data, string message = "Operation successful.") => new(true, message, data);
     public static ResultDto<T> Failure(string message) => new(false, message);
 }
