@@ -5,7 +5,11 @@ namespace Hotel_Core.ServiceContracts
 {
     public interface IIdentityService
     {
-        Task<ApplicationUser?> GetCurrentUserAsync();
+        Task<ApplicationUser?> GetCurrentUserWithoutErrorAsync();
+
+        Task<ApplicationUser> GetUserByIdAsync(string userId);
+        
+        Task<ApplicationUser> GetCurrentUserAsync();
 
         Task<bool> CurrentUserHasAnyRoleAsync(params string[] roleNames);
 

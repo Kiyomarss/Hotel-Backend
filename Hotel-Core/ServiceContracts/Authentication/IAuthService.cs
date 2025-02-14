@@ -14,11 +14,11 @@ public interface IAuthService
     
     Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request);
 
-    Task<ResultDto<bool>> ChangeUserNameAsync(string newUserName);
+    Task ChangeUserNameAsync(string newUserName);
 
-    Task<ResultDto<bool>> ChangePersonNameAsync(string newPersonName);
+    Task ChangePersonNameAsync(string newPersonName);
     
-    Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream);
+    Task<string> UpdateAvatarAsync(Stream avatarStream);
 
-    Task<ResultDto<bool>> DeleteUserAsync(string userId);
+    Task DeleteUserAsync(string userId);
 }

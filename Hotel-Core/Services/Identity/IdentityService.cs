@@ -22,8 +22,36 @@ namespace Hotel_Core.Services
             var user = _httpContextAccessor.HttpContext?.User;
             return user?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
+        
+        public async Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            var userId = GetLoggedInUserId();
 
-        public async Task<ApplicationUser?> GetCurrentUserAsync()
+            if (string.IsNullOrEmpty(userId))
+                throw new KeyNotFoundException("User not found.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            return user;
+        }
+
+        public async Task<ApplicationUser> GetUserByIdAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            return user;
+        }
+
+        public async Task<ApplicationUser?> GetCurrentUserWithoutErrorAsync()
         {
             var userId = GetLoggedInUserId();
             if (string.IsNullOrEmpty(userId))
@@ -84,7 +112,7 @@ namespace Hotel_Core.Services
         
         public async Task<bool> HasAccessAsync(string requiredPermission)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await GetCurrentUserWithoutErrorAsync();
             if (user == null)
                 return false;
 

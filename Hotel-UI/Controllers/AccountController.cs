@@ -52,17 +52,17 @@ namespace Hotel_UI.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangeUserName([FromBody] string newUserName)
         {
-            var result = await _authService.ChangeUserNameAsync(newUserName);
+            await _authService.ChangeUserNameAsync(newUserName);
 
-            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+            return Ok(new MessageResponse("UserName updated successfully."));
         }
         
         [HttpPost]
         public async Task<IActionResult> ChangePersonName([FromBody] string newPersonName)
         {
-            var result = await _authService.ChangePersonNameAsync(newPersonName);
+            await _authService.ChangePersonNameAsync(newPersonName);
 
-            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+            return Ok(new MessageResponse("PersonName updated successfully."));
         }
 
 
@@ -75,15 +75,15 @@ namespace Hotel_UI.Controllers
 
             var result = await _authService.UpdateAvatarAsync(Request.Body);
 
-            return result.IsSuccess ? Ok(new DataResponse<string>(result.Data)) : BadRequest(new MessageResponse(result.Message));
+            return Ok(new DataResponse<string>(result));
         }
         
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
-            var result = await _authService.DeleteUserAsync(userId);
+            await _authService.DeleteUserAsync(userId);
 
-            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+            return Ok(new MessageResponse("User deleted successfully."));
         }
     }
 }

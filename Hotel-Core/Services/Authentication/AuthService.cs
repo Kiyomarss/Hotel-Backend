@@ -43,7 +43,6 @@ namespace Hotel_Core.Services
                        : ResultDto<string>.Failure("Update Failed.");
         }
 
-
         public async Task<ResultDto<LoginResult>> LoginAsync(LoginRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
@@ -59,7 +58,6 @@ namespace Hotel_Core.Services
 
             return ResultDto<LoginResult>.Success(loginResult);
         }
-
 
         public async Task LogoutAsync()
         {
@@ -95,7 +93,7 @@ namespace Hotel_Core.Services
 
         public async Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request)
         {
-            var user = await _identityService.GetCurrentUserAsync();
+            var user = await _identityService.GetCurrentUserWithoutErrorAsync();
 
             if (user == null)
                 return ResultDto<bool>.Failure("User not found.");
@@ -105,40 +103,32 @@ namespace Hotel_Core.Services
             return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("ChangePassword Failed.");
         }
 
-        public async Task<ResultDto<bool>> ChangeUserNameAsync(string newUserName)
+        public async Task ChangeUserNameAsync(string newUserName)
         {
             var user = await _identityService.GetCurrentUserAsync();
-
-            if (user == null)
-                return ResultDto<bool>.Failure("User not found.");
 
             user.UserName = newUserName;
 
             var updateResult = await _userManager.UpdateAsync(user);
 
-            return updateResult.Succeeded ? ResultDto<bool>.Success(true, "Username updated successfully.") : ResultDto<bool>.Failure("Failed to update username.");
+            if (!updateResult.Succeeded)
+                throw new InvalidOperationException("Failed to update UserName.");
         }
 
-        public async Task<ResultDto<bool>> ChangePersonNameAsync(string newPersonName)
+        public async Task ChangePersonNameAsync(string newPersonName)
         {
             var user = await _identityService.GetCurrentUserAsync();
-
-            if (user == null)
-                return ResultDto<bool>.Failure("User not found.");
 
             user.PersonName = newPersonName;
 
             var updateResult = await _userManager.UpdateAsync(user);
-
-            return updateResult.Succeeded ? ResultDto<bool>.Success(true, "PersonName updated successfully.") : ResultDto<bool>.Failure("Failed to update personName.");
+            if (!updateResult.Succeeded)
+                throw new InvalidOperationException("Failed to update PersonName.");
         }
 
-        public async Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream)
+        public async Task<string> UpdateAvatarAsync(Stream avatarStream)
         {
             var user = await _identityService.GetCurrentUserAsync();
-
-            if (user == null)
-                return ResultDto<string>.Failure("User not found.");
 
             var avatarPath = await SaveNewAvatarFromStreamAsync(avatarStream);
             user.AvatarPath = avatarPath;
@@ -146,9 +136,9 @@ namespace Hotel_Core.Services
             var updateResult = await _userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
-                return ResultDto<string>.Failure("Update Failed.");
+                throw new InvalidOperationException("Update Failed.");
 
-            return ResultDto<string>.Success(avatarPath);
+            return avatarPath;
         }
 
         private async Task<string> SaveNewAvatarFromStreamAsync(Stream fileStream)
@@ -165,16 +155,14 @@ namespace Hotel_Core.Services
             return $"/avatars/{fileName}";
         }
 
-        public async Task<ResultDto<bool>> DeleteUserAsync(string userId)
+        public async Task DeleteUserAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-                return ResultDto<bool>.Failure("User not found.");
+            var user = await _identityService.GetUserByIdAsync(userId);
 
             var result = await _userManager.DeleteAsync(user);
-
-            return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("Failed to delete user.");
+            
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Delete Failed.");
         }
     }
 }
