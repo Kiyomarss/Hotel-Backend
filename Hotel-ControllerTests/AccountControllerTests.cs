@@ -17,6 +17,8 @@ namespace Hotel_ControllerTests
             _controller = new AccountController(_mockAuthService.Object);
         }
 
+        #region DeleteUser
+
         [Fact]
         public async Task DeleteUser_ReturnsBadRequest_WhenUserNotFound()
         {
@@ -44,5 +46,7 @@ namespace Hotel_ControllerTests
             var response = Assert.IsType<MessageResponse>(okResult.Value);
             Assert.Equal("User deleted successfully.", response.Message);
         }
+
+        #endregion
     }
 }

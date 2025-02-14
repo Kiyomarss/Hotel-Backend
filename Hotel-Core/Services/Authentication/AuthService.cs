@@ -22,7 +22,7 @@ namespace Hotel_Core.Services
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _identityService = identityService ;
+            _identityService = identityService;
             _configuration = configuration;
         }
 
@@ -33,9 +33,7 @@ namespace Hotel_Core.Services
 
             var user = new ApplicationUser
             {
-                UserName = request.Email,
-                Email = request.Email,
-                PersonName = request.PersonName
+                UserName = request.Email, Email = request.Email, PersonName = request.PersonName
             };
 
             var result = await _userManager.CreateAsync(user);
@@ -52,6 +50,7 @@ namespace Hotel_Core.Services
                 return ResultDto<LoginResult>.Failure("Email and password are required.");
 
             var user = await _userManager.FindByEmailAsync(request.Email);
+
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
                 return ResultDto<LoginResult>.Failure("Invalid credentials.");
 
@@ -71,16 +70,14 @@ namespace Hotel_Core.Services
         {
             var claims = new List<Claim>
             {
-                new (JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new (JwtRegisteredClaimNames.Email, user.Email),
-                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new (JwtRegisteredClaimNames.NameId, user.Id.ToString())
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()), new(JwtRegisteredClaimNames.Email, user.Email), new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), new(JwtRegisteredClaimNames.NameId, user.Id.ToString())
             };
 
             var roles = await _userManager.GetRolesAsync(user);
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var secretKey = _configuration["Jwt:Key"];
+
             if (string.IsNullOrEmpty(secretKey))
                 throw new InvalidOperationException("JWT Key is not configured.");
 
@@ -92,88 +89,92 @@ namespace Hotel_Core.Services
             var expiration = DateTime.UtcNow.AddHours(int.TryParse(_configuration["Jwt:ExpirationHours"], out var hours) ? hours : 2);
 
             var token = new JwtSecurityToken(issuer, audience, claims, expires: expiration, signingCredentials: creds);
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        
-    public async Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request)
-    {
-        var user = await _identityService.GetCurrentUserAsync();
-        
-        if (user == null)
-            return ResultDto<bool>.Failure("User not found.");
 
-        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.newPassword);
+        public async Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request)
+        {
+            var user = await _identityService.GetCurrentUserAsync();
 
-        return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("ChangePassword Failed.");
-    }
-    
-    public async Task<ResultDto<bool>> ChangeUserNameAsync(string newUserName)
-    {
-        var user = await _identityService.GetCurrentUserAsync();
+            if (user == null)
+                return ResultDto<bool>.Failure("User not found.");
 
-        if (user == null)
-            return ResultDto<bool>.Failure("User not found.");
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.newPassword);
 
-        user.UserName = newUserName;
+            return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("ChangePassword Failed.");
+        }
 
-        var updateResult = await _userManager.UpdateAsync(user);
-        
-        return updateResult.Succeeded ? ResultDto<bool>.Success(true, "Username updated successfully.") : ResultDto<bool>.Failure("Failed to update username.");
-    }
-    
-    public async Task<ResultDto<bool>> ChangePersonNameAsync(string newPersonName)
-    {
-        var user = await _identityService.GetCurrentUserAsync();
+        public async Task<ResultDto<bool>> ChangeUserNameAsync(string newUserName)
+        {
+            var user = await _identityService.GetCurrentUserAsync();
 
-        if (user == null)
-            return ResultDto<bool>.Failure("User not found.");
+            if (user == null)
+                return ResultDto<bool>.Failure("User not found.");
 
-        user.PersonName = newPersonName;
+            user.UserName = newUserName;
 
-        var updateResult = await _userManager.UpdateAsync(user);
-        
-        return updateResult.Succeeded ? ResultDto<bool>.Success(true, "PersonName updated successfully.") : ResultDto<bool>.Failure("Failed to update personName.");
-    }
-    
-    public async Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream)
-    {
-        var user = await _identityService.GetCurrentUserAsync();
-        
-        if (user == null)
-            return ResultDto<string>.Failure("User not found.");
+            var updateResult = await _userManager.UpdateAsync(user);
 
-        var avatarPath = await SaveNewAvatarFromStreamAsync(avatarStream);
-        user.AvatarPath = avatarPath;
+            return updateResult.Succeeded ? ResultDto<bool>.Success(true, "Username updated successfully.") : ResultDto<bool>.Failure("Failed to update username.");
+        }
 
-        var updateResult = await _userManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
-            return ResultDto<string>.Failure("Update Failed.");
+        public async Task<ResultDto<bool>> ChangePersonNameAsync(string newPersonName)
+        {
+            var user = await _identityService.GetCurrentUserAsync();
 
-        return ResultDto<string>.Success(avatarPath);
-    }
+            if (user == null)
+                return ResultDto<bool>.Failure("User not found.");
 
-    private async Task<string> SaveNewAvatarFromStreamAsync(Stream fileStream)
-    {
-        var avatarFolderPath = Path.Combine("wwwroot", "avatars");
-        Directory.CreateDirectory(avatarFolderPath);
+            user.PersonName = newPersonName;
 
-        var fileName = $"{Guid.NewGuid()}.jpg";
-        var filePath = Path.Combine(avatarFolderPath, fileName);
+            var updateResult = await _userManager.UpdateAsync(user);
 
-        await using var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await fileStream.CopyToAsync(outputStream);
+            return updateResult.Succeeded ? ResultDto<bool>.Success(true, "PersonName updated successfully.") : ResultDto<bool>.Failure("Failed to update personName.");
+        }
 
-        return $"/avatars/{fileName}";
-    }
-    
-    public async Task<ResultDto<bool>> DeleteUserAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
-            return ResultDto<bool>.Failure("User not found.");
+        public async Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream)
+        {
+            var user = await _identityService.GetCurrentUserAsync();
 
-        var result = await _userManager.DeleteAsync(user);
-        return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("Failed to delete user.");
-    }
+            if (user == null)
+                return ResultDto<string>.Failure("User not found.");
+
+            var avatarPath = await SaveNewAvatarFromStreamAsync(avatarStream);
+            user.AvatarPath = avatarPath;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+                return ResultDto<string>.Failure("Update Failed.");
+
+            return ResultDto<string>.Success(avatarPath);
+        }
+
+        private async Task<string> SaveNewAvatarFromStreamAsync(Stream fileStream)
+        {
+            var avatarFolderPath = Path.Combine("wwwroot", "avatars");
+            Directory.CreateDirectory(avatarFolderPath);
+
+            var fileName = $"{Guid.NewGuid()}.jpg";
+            var filePath = Path.Combine(avatarFolderPath, fileName);
+
+            await using var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await fileStream.CopyToAsync(outputStream);
+
+            return $"/avatars/{fileName}";
+        }
+
+        public async Task<ResultDto<bool>> DeleteUserAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return ResultDto<bool>.Failure("User not found.");
+
+            var result = await _userManager.DeleteAsync(user);
+
+            return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("Failed to delete user.");
+        }
     }
 }
