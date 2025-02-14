@@ -10,6 +10,8 @@ public record LoginRequest(string Email, string Password);
 
 public record UserDetails(string FullName,string Email, string? Avatar);
 
-public record UpdateUserRequest(string? FullName, string? Password, string? CurrentPassword);
+public record ChangePasswordRequest(string CurrentPassword, string newPassword);
+
+public record UpdateUserNameRequest(string PersonName);
 
 public record UserDto(string FullName, string Email, string? AvatarPath);

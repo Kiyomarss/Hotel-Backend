@@ -95,36 +95,46 @@ namespace Hotel_Core.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
         
-    public async Task<ResultDto<UserDto>> UpdateUserAsync(UpdateUserRequest request)
+    public async Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request)
     {
         var user = await _identityService.GetCurrentUserAsync();
         
         if (user == null)
-            return ResultDto<UserDto>.Failure("User not found.");
+            return ResultDto<bool>.Failure("User not found.");
 
-        var isPasswordUpdate = !string.IsNullOrEmpty(request.Password) && !string.IsNullOrEmpty(request.CurrentPassword);
-        var isFullNameUpdate = !string.IsNullOrEmpty(request.FullName);
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.newPassword);
 
-        if (isPasswordUpdate == isFullNameUpdate)
-            return ResultDto<UserDto>.Failure("Only one field can be updated at a time (either password or full name).");
-
-        if (isFullNameUpdate)
-        {
-            user.PersonName = request.FullName!;
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-                return ResultDto<UserDto>.Failure(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
-        }
-        else if (isPasswordUpdate)
-        {
-            var passwordChangeResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword!, request.Password!);
-            if (!passwordChangeResult.Succeeded)
-                return ResultDto<UserDto>.Failure(string.Join(", ", passwordChangeResult.Errors.Select(e => e.Description)));
-        }
-
-        return ResultDto<UserDto>.Success(new UserDto(user.PersonName, user.Email, user.AvatarPath));
+        return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("ChangePassword Failed.");
     }
+    
+    public async Task<ResultDto<bool>> ChangeUserNameAsync(string newUserName)
+    {
+        var user = await _identityService.GetCurrentUserAsync();
 
+        if (user == null)
+            return ResultDto<bool>.Failure("User not found.");
+
+        user.UserName = newUserName;
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        
+        return updateResult.Succeeded ? ResultDto<bool>.Success(true, "Username updated successfully.") : ResultDto<bool>.Failure("Failed to update username.");
+    }
+    
+    public async Task<ResultDto<bool>> ChangePersonNameAsync(string newPersonName)
+    {
+        var user = await _identityService.GetCurrentUserAsync();
+
+        if (user == null)
+            return ResultDto<bool>.Failure("User not found.");
+
+        user.PersonName = newPersonName;
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        
+        return updateResult.Succeeded ? ResultDto<bool>.Success(true, "PersonName updated successfully.") : ResultDto<bool>.Failure("Failed to update personName.");
+    }
+    
     public async Task<ResultDto<string>> UpdateAvatarAsync(Stream avatarStream)
     {
         var user = await _identityService.GetCurrentUserAsync();

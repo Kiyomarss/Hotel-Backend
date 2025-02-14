@@ -42,12 +42,29 @@ namespace Hotel_UI.Controllers
         
         [HttpPost]
         [Authorize(Roles = "Admin, User")]
-        public async Task<IActionResult> UpdateCurrentUser(UpdateUserRequest request)
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
         {
-            var result = await _authService.UpdateUserAsync(request);
+            var result = await _authService.ChangePasswordAsync(request);
 
-            return result.IsSuccess ? Ok(new DataResponse<UserDto>(result.Data)) : BadRequest(new MessageResponse(result.Message));
+            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
         }
+        
+        [HttpPost]
+        public async Task<IActionResult> ChangeUserName([FromBody] string newUserName)
+        {
+            var result = await _authService.ChangeUserNameAsync(newUserName);
+
+            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> ChangePersonName([FromBody] string newPersonName)
+        {
+            var result = await _authService.ChangePersonNameAsync(newPersonName);
+
+            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+        }
+
 
         [HttpPost]
         [Consumes("application/octet-stream")]
