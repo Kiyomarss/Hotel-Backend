@@ -4,6 +4,7 @@ using Hotel_Core.ServiceContracts;
 using Hotel_UI.Controllers;
 using Hotel_Core.DTO;
 using Hotel_Core.DTO.Auth;
+using Microsoft.AspNetCore.Http;
 
 namespace Hotel_ControllerTests
 {
@@ -18,6 +19,42 @@ namespace Hotel_ControllerTests
             _controller = new AccountController(_mockAuthService.Object);
         }
 
+        #region Logout
+
+        [Fact]
+        public async Task Logout_ReturnsOkResult_WhenLogoutIsSuccessful()
+        {
+            // Arrange
+            _mockAuthService.Setup(service => service.LogoutAsync())
+                            .Returns(Task.CompletedTask);
+            // Act
+            var result = await _controller.Logout();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var messageResponse = Assert.IsType<MessageResponse>(okResult.Value);
+            Assert.Equal("Logout successful.", messageResponse.Message);
+        }
+
+        [Fact]
+        public async Task Logout_ReturnsInternalServerError_WhenLogoutFails()
+        {
+            // Arrange
+            _mockAuthService.Setup(service => service.LogoutAsync())
+                            .ThrowsAsync(new Exception("Logout failed"));
+
+            // Act
+            var result = await _controller.Logout();
+
+            // Assert
+            var statusCodeResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, statusCodeResult.StatusCode);
+            var messageResponse = Assert.IsType<MessageResponse>(statusCodeResult.Value);
+            Assert.Equal("Logout failed", messageResponse.Message);
+        }
+
+        #endregion
+        
         #region Login
 
         [Fact]
