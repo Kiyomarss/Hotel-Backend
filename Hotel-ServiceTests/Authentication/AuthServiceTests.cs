@@ -17,7 +17,81 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
     {
         _fixture.MockUserManager.Reset();
     }
-    
+
+    #region Login
+
+    [Fact]
+    public async Task LoginAsync_ReturnsLoginResult_WhenCredentialsAreValid()
+    {
+        // Arrange
+        var request = new LoginRequest("test@example.com", "password");
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            Email = request.Email,
+            UserName = request.Email,
+            PersonName = "Test User",
+            AvatarPath = "avatar.png"
+        };
+
+        _fixture.MockUserManager.Setup(m => m.FindByEmailAsync(request.Email))
+                .ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(m => m.CheckPasswordAsync(user, request.Password))
+                .ReturnsAsync(true);
+
+        var token = await _fixture.AuthService.GenerateJwtToken(user);
+        Assert.NotNull(token);
+
+
+        // Act
+        var result = await _fixture.AuthService.LoginAsync(request);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Token);
+        ;
+        Assert.Equal(user.PersonName, result.User.PersonName);
+        Assert.Equal(user.Email, result.User.Email);
+        Assert.Equal(user.AvatarPath, result.User.AvatarPath);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ThrowsInvalidOperationException_WhenUserNotFound()
+    {
+        // Arrange
+        var request = new LoginRequest("test@example.com", "password");
+
+        _fixture.MockUserManager.Setup(m => m.FindByEmailAsync(request.Email))
+                .ReturnsAsync((ApplicationUser)null);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.LoginAsync(request));
+        Assert.Equal("Invalid credentials.", exception.Message);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ThrowsInvalidOperationException_WhenPasswordIsIncorrect()
+    {
+        // Arrange
+        var request = new LoginRequest("test@example.com", "wrong-password");
+        var user = new ApplicationUser
+        {
+            Email = request.Email, UserName = request.Email
+        };
+
+        _fixture.MockUserManager.Setup(m => m.FindByEmailAsync(request.Email))
+                .ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(m => m.CheckPasswordAsync(user, request.Password))
+                .ReturnsAsync(false);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.LoginAsync(request));
+        Assert.Equal("Invalid credentials.", exception.Message);
+    }
+
+    #endregion
     
     #region Signup
 

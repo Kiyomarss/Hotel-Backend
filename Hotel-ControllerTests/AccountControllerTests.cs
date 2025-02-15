@@ -18,6 +18,46 @@ namespace Hotel_ControllerTests
             _controller = new AccountController(_mockAuthService.Object);
         }
 
+        #region Login
+
+        [Fact]
+        public async Task Login_ReturnsOk_WhenLoginIsSuccessful()
+        {
+            // Arrange
+            var request = new LoginRequest("test@example.com", "password");
+            var expectedResult = new LoginResult("mocked-token", new UserDetails("Test User", "test@example.com", "avatar.png"));
+
+            _mockAuthService.Setup(s => s.LoginAsync(request))
+                            .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _controller.Login(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<LoginResult>(okResult.Value);
+            Assert.Equal("mocked-token", response.Token);
+            Assert.Equal("Test User", response.User.PersonName);
+            Assert.Equal("test@example.com", response.User.Email);
+            Assert.Equal("avatar.png", response.User.AvatarPath);
+        }
+
+        [Fact]
+        public async Task Login_ThrowsInvalidOperationException_WhenCredentialsAreInvalid()
+        {
+            // Arrange
+            var request = new LoginRequest("test@example.com", "wrongpassword");
+
+            _mockAuthService.Setup(s => s.LoginAsync(request))
+                            .ThrowsAsync(new InvalidOperationException("Invalid credentials."));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.Login(request));
+            Assert.Equal("Invalid credentials.", exception.Message);
+        }
+
+        #endregion
+
         #region Signup
 
         [Fact]

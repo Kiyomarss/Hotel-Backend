@@ -29,7 +29,7 @@ namespace Hotel_UI.Controllers
         {
             var result = await _authService.LoginAsync(request);
 
-            return result.IsSuccess ? Ok(new DataResponse<LoginResult>(result.Data)) : Unauthorized(new MessageResponse(result.Message));
+            return Ok(result);
         }
 
         [HttpPost]

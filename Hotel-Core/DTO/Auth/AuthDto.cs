@@ -8,7 +8,7 @@ public record LoginResult(string Token = "", UserDetails User = null);
 
 public record LoginRequest(string Email, string Password);
 
-public record UserDetails(string FullName,string Email, string? Avatar);
+public record UserDetails(string? PersonName,string Email, string? AvatarPath);
 
 public record ChangePasswordRequest(string CurrentPassword, string newPassword);
 

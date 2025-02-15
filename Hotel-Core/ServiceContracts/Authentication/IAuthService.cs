@@ -8,7 +8,7 @@ public interface IAuthService
 {
     Task SignupAsync(SignupRequest request);
 
-    Task<ResultDto<LoginResult>> LoginAsync(LoginRequest request);
+    Task<LoginResult> LoginAsync(LoginRequest request);
     
     Task LogoutAsync();
     

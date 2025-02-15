@@ -36,6 +36,14 @@ public class AuthServiceFixture : IDisposable
                                       MockSignInManager.Object,
                                       MockConfiguration.Object,
                                       MockIdentityService.Object);
+        
+        MockUserManager.Setup(m => m.GetRolesAsync(It.IsAny<ApplicationUser>()))
+                       .ReturnsAsync(new List<string> { "Admin", "User" });
+        
+        MockConfiguration.Setup(c => c["Jwt:Key"]).Returns("your-very-secure-and-long-secret-key!!");
+        MockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("your-issuer");
+        MockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("your-audience");
+        MockConfiguration.Setup(c => c["Jwt:ExpirationHours"]).Returns("2");
     }
 
     public void Dispose() { }

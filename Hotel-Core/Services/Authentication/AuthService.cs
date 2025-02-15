@@ -39,20 +39,15 @@ namespace Hotel_Core.Services
                 throw new InvalidOperationException("Signup Failed.");
         }
 
-        public async Task<ResultDto<LoginResult>> LoginAsync(LoginRequest request)
+        public async Task<LoginResult> LoginAsync(LoginRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return ResultDto<LoginResult>.Failure("Email and password are required.");
-
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-                return ResultDto<LoginResult>.Failure("Invalid credentials.");
+                throw new InvalidOperationException("Invalid credentials.");
 
             var token = await GenerateJwtToken(user);
-            var loginResult = new LoginResult(token, new UserDetails(user.PersonName, user.Email, user.AvatarPath));
-
-            return ResultDto<LoginResult>.Success(loginResult);
+            return new LoginResult(token, new UserDetails(user.PersonName, user.Email, user.AvatarPath));
         }
 
         public async Task LogoutAsync()
@@ -60,7 +55,7 @@ namespace Hotel_Core.Services
             await _signInManager.SignOutAsync();
         }
 
-        private async Task<string> GenerateJwtToken(ApplicationUser user)
+        public async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var claims = new List<Claim>
             {
