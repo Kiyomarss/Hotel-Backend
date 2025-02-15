@@ -19,9 +19,9 @@ namespace Hotel_UI.Controllers
         [HttpPost]
         public async Task<IActionResult> Signup(SignupRequest request)
         {
-            var result = await _authService.SignupAsync(request);
+            await _authService.SignupAsync(request);
 
-            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+            return Ok(new MessageResponse("Signup successful."));
         }
 
         [HttpPost]

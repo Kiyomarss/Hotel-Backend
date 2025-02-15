@@ -1,9 +1,9 @@
 using ContactsManager.Core.Domain.IdentityEntities;
+using Hotel_Core.DTO.Auth;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 
-namespace Hotel_ServiceTests
-{
+namespace Hotel_ServiceTests;
 public class AuthServiceTests : IClassFixture<AuthServiceFixture>
 {
     private readonly AuthServiceFixture _fixture;
@@ -12,6 +12,48 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
     {
         _fixture = fixture;
     }
+
+    private void ResetMocks()
+    {
+        _fixture.MockUserManager.Reset();
+    }
+    
+    
+    #region Signup
+
+    [Fact]
+    public async Task SignupAsync_Success_WhenUserIsCreated()
+    {
+        ResetMocks();
+        // Arrange
+        var request = new SignupRequest("test@example.com", "Test User", "password");
+
+        _fixture.MockUserManager.Setup(m => m.CreateAsync(It.IsAny<ApplicationUser>(), request.Password))
+                .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _fixture.AuthService.SignupAsync(request);
+
+        // Assert
+        _fixture.MockUserManager.Verify(m => m.CreateAsync(It.IsAny<ApplicationUser>(), request.Password), Times.Once);
+    }
+
+
+    [Fact]
+    public async Task SignupAsync_ThrowsInvalidOperationException_WhenCreateFails()
+    {
+        // Arrange
+        var request = new SignupRequest("test@example.com", "Test User", "password");
+
+        _fixture.MockUserManager.Setup(m => m.CreateAsync(It.IsAny<ApplicationUser>(), request.Password))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Signup failed" }));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.SignupAsync(request));
+        Assert.Equal("Signup Failed.", exception.Message);
+    }
+
+    #endregion
 
     #region DeleteUser
 
@@ -67,5 +109,4 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
     }
 
     #endregion
-}
 }

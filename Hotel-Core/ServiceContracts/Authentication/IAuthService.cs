@@ -6,7 +6,7 @@ namespace Hotel_Core.ServiceContracts;
 
 public interface IAuthService
 {
-    Task<ResultDto<string>> SignupAsync(SignupRequest request);
+    Task SignupAsync(SignupRequest request);
 
     Task<ResultDto<LoginResult>> LoginAsync(LoginRequest request);
     

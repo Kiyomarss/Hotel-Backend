@@ -38,8 +38,5 @@ public class AuthServiceFixture : IDisposable
                                       MockIdentityService.Object);
     }
 
-    public void Dispose()
-    {
-        // در صورت نیاز به پاک‌سازی منابع، اینجا انجام دهید
-    }
+    public void Dispose() { }
 }

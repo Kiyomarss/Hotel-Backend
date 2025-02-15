@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Hotel_Core.ServiceContracts;
 using Hotel_UI.Controllers;
 using Hotel_Core.DTO;
+using Hotel_Core.DTO.Auth;
 
 namespace Hotel_ControllerTests
 {
@@ -16,6 +17,42 @@ namespace Hotel_ControllerTests
             _mockAuthService = new Mock<IAuthService>();
             _controller = new AccountController(_mockAuthService.Object);
         }
+
+        #region Signup
+
+        [Fact]
+        public async Task Signup_ReturnsOk_WhenSignupIsSuccessful()
+        {
+            // Arrange
+            var request = new SignupRequest("test@example.com", "Test User", "password");
+
+            _mockAuthService.Setup(s => s.SignupAsync(request))
+                            .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.Signup(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(okResult.Value);
+            Assert.Equal("Signup successful.", response.Message);
+        }
+
+        [Fact]
+        public async Task Signup_ThrowsException_WhenSignupFails()
+        {
+            // Arrange
+            var request = new SignupRequest("test@example.com", "Test User", "password");
+
+            _mockAuthService.Setup(s => s.SignupAsync(request))
+                            .ThrowsAsync(new InvalidOperationException("Signup failed."));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.Signup(request));
+            Assert.Equal("Signup failed.", exception.Message);
+        }
+
+        #endregion
 
         #region DeleteUser Tests
 

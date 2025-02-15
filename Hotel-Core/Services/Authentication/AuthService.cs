@@ -26,21 +26,17 @@ namespace Hotel_Core.Services
             _configuration = configuration;
         }
 
-        public async Task<ResultDto<string>> SignupAsync(SignupRequest request)
+        public async Task SignupAsync(SignupRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return ResultDto<string>.Failure("Email and password are required.");
-
             var user = new ApplicationUser
             {
                 UserName = request.Email, Email = request.Email, PersonName = request.PersonName
             };
 
-            var result = await _userManager.CreateAsync(user);
+            var result = await _userManager.CreateAsync(user, request.Password);
 
-            return result.Succeeded
-                       ? ResultDto<string>.Success(null, "Update Success.")
-                       : ResultDto<string>.Failure("Update Failed.");
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Signup Failed.");
         }
 
         public async Task<ResultDto<LoginResult>> LoginAsync(LoginRequest request)
