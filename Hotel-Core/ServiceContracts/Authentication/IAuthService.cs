@@ -12,7 +12,7 @@ public interface IAuthService
     
     Task LogoutAsync();
     
-    Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request);
+    Task ChangePasswordAsync(ChangePasswordRequest request);
 
     Task ChangeUserNameAsync(string newUserName);
 

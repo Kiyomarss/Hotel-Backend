@@ -18,6 +18,70 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         _fixture.MockUserManager.Reset();
     }
 
+    #region ChangePassword
+
+    [Fact]
+    public async Task ChangePasswordAsync_Succeeds_WhenPasswordIsChangedSuccessfully()
+    {
+        // Arrange
+        var request = new ChangePasswordRequest("oldPassword", "newSecurePassword");
+
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(), Email = "test@example.com"
+        };
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync()).ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(u => u.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword))
+                .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _fixture.AuthService.ChangePasswordAsync(request);
+
+        // Assert
+        _fixture.MockUserManager.Verify(u => u.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ThrowsException_WhenChangePasswordFails()
+    {
+        // Arrange
+        var request = new ChangePasswordRequest("oldPassword", "newSecurePassword");
+
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(), Email = "test@example.com"
+        };
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync()).ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(u => u.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword))
+                .ReturnsAsync(IdentityResult.Failed());
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.ChangePasswordAsync(request));
+
+        Assert.Equal("ChangePassword Failed.", exception.Message);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ThrowsException_WhenUserNotFound()
+    {
+        // Arrange
+        var request = new ChangePasswordRequest("oldPassword", "newSecurePassword");
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ThrowsAsync(new KeyNotFoundException("User not found."));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.AuthService.ChangePasswordAsync(request));
+
+        Assert.Equal("User not found.", exception.Message);
+    }
+
+    #endregion
+
     #region Login
 
     [Fact]

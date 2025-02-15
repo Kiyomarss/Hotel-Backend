@@ -51,9 +51,9 @@ namespace Hotel_UI.Controllers
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
         {
-            var result = await _authService.ChangePasswordAsync(request);
+            await _authService.ChangePasswordAsync(request);
 
-            return result.IsSuccess ? Ok(new MessageResponse(result.Message)) : BadRequest(new MessageResponse(result.Message));
+            return Ok(new MessageResponse("Change password successfully."));
         }
         
         [HttpPost]

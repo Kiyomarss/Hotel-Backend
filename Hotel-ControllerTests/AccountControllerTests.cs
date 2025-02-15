@@ -19,6 +19,41 @@ namespace Hotel_ControllerTests
             _controller = new AccountController(_mockAuthService.Object);
         }
 
+        #region ChangePassword
+
+        [Fact]
+        public async Task ChangePassword_ReturnsOk_WhenPasswordChangesSuccessfully()
+        {
+            // Arrange
+            var request = new ChangePasswordRequest("oldPassword", "newSecurePassword");
+
+            _mockAuthService.Setup(s => s.ChangePasswordAsync(request))
+                            .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.ChangePassword(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(okResult.Value);
+            Assert.Equal("Change password successfully.", response.Message);
+        }
+
+        [Fact]
+        public async Task ChangePassword_ThrowsException_WhenChangePasswordFails()
+        {
+            // Arrange
+            var request = new ChangePasswordRequest("oldPassword", "newSecurePassword");
+
+            _mockAuthService.Setup(s => s.ChangePasswordAsync(request))
+                            .ThrowsAsync(new InvalidOperationException("ChangePassword Failed."));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ChangePassword(request));
+        }
+
+        #endregion
+
         #region Logout
 
         [Fact]

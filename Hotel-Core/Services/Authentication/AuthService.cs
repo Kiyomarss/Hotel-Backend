@@ -82,16 +82,14 @@ namespace Hotel_Core.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<ResultDto<bool>> ChangePasswordAsync(ChangePasswordRequest request)
+        public async Task ChangePasswordAsync(ChangePasswordRequest request)
         {
-            var user = await _identityService.GetCurrentUserWithoutErrorAsync();
+            var user = await _identityService.GetCurrentUserAsync();
 
-            if (user == null)
-                return ResultDto<bool>.Failure("User not found.");
-
-            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.newPassword);
-
-            return result.Succeeded ? ResultDto<bool>.Success(true) : ResultDto<bool>.Failure("ChangePassword Failed.");
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            
+            if (!result.Succeeded)
+                throw new InvalidOperationException("ChangePassword Failed.");
         }
 
         public async Task ChangeUserNameAsync(string newUserName)
