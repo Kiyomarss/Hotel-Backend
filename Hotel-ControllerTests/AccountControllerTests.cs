@@ -76,16 +76,11 @@ namespace Hotel_ControllerTests
         {
             // Arrange
             _mockAuthService.Setup(service => service.LogoutAsync())
-                            .ThrowsAsync(new Exception("Logout failed"));
+                            .ThrowsAsync(new InvalidOperationException("Logout failed"));
 
-            // Act
-            var result = await _controller.Logout();
-
-            // Assert
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(StatusCodes.Status500InternalServerError, statusCodeResult.StatusCode);
-            var messageResponse = Assert.IsType<MessageResponse>(statusCodeResult.Value);
-            Assert.Equal("Logout failed", messageResponse.Message);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.Logout());
+            Assert.Equal("Logout failed", exception.Message);
         }
 
         #endregion

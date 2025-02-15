@@ -36,15 +36,9 @@ namespace Hotel_UI.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            try
-            {
-                await _authService.LogoutAsync();
-                return Ok(new MessageResponse("Logout successful."));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new MessageResponse(ex.Message));
-            }
+            await _authService.LogoutAsync();
+
+            return Ok(new MessageResponse("Logout successful."));
         }
         
         [HttpPost]

@@ -82,6 +82,34 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
 
     #endregion
 
+    #region Logout
+
+    [Fact]
+    public async Task LogoutAsync_CallsSignOutAsyncSuccessfully()
+    {
+        // Arrange
+        _fixture.MockSignInManager.Setup(s => s.SignOutAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        await _fixture.AuthService.LogoutAsync();
+
+        // Assert
+        _fixture.MockSignInManager.Verify(s => s.SignOutAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task LogoutAsync_ThrowsException_WhenSignOutFails()
+    {
+        // Arrange
+        _fixture.MockSignInManager.Setup(s => s.SignOutAsync()).ThrowsAsync(new InvalidOperationException("Logout failed"));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.LogoutAsync());
+        Assert.Equal("Logout failed", exception.Message);
+    }
+
+    #endregion
+
     #region Login
 
     [Fact]
