@@ -1,6 +1,8 @@
 using ContactsManager.Core.Domain.IdentityEntities;
+using Hotel_Core.DTO;
 using Hotel_Core.DTO.Auth;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 
 namespace Hotel_ServiceTests;
@@ -17,6 +19,116 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
     {
         _fixture.MockUserManager.Reset();
     }
+    
+    #region ChangePersonName
+    
+    [Fact]
+    public async Task ChangePersonNameAsync_UpdatesUserNameSuccessfully()
+    {
+        // Arrange
+        var person = new ApplicationUser { Id = Guid.NewGuid(), PersonName = "OldPersonName" };
+        var newPersonName = "NewPersonName";
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ReturnsAsync(person);
+
+        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _fixture.AuthService.ChangePersonNameAsync(newPersonName);
+
+        // Assert
+        Assert.Equal(newPersonName, person.PersonName);
+        _fixture.MockUserManager.Verify(m => m.UpdateAsync(person), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangePersonNameAsync_ThrowsException_WhenUserUpdateFails()
+    {
+        // Arrange
+        var person = new ApplicationUser { Id = Guid.NewGuid(), PersonName = "OldPersonName" };
+        var newPersonName = "NewPersonName";
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ReturnsAsync(person);
+
+        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Update failed" }));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.ChangePersonNameAsync(newPersonName));
+        Assert.Equal("Failed to update PersonName.", exception.Message);
+    }
+
+    [Fact]
+    public async Task ChangePersonNameAsync_ThrowsException_WhenUserNotFound()
+    {
+        // Arrange
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ThrowsAsync(new KeyNotFoundException("Person not found."));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.AuthService.ChangePersonNameAsync("NewPersonName"));
+        Assert.Equal("Person not found.", exception.Message);
+    }
+
+    #endregion
+
+    #region ChangeUserName
+    
+    [Fact]
+    public async Task ChangeUserNameAsync_UpdatesUserNameSuccessfully()
+    {
+        // Arrange
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = "OldUserName" };
+        var newUserName = "NewUserName";
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _fixture.AuthService.ChangeUserNameAsync(newUserName);
+
+        // Assert
+        Assert.Equal(newUserName, user.UserName);
+        _fixture.MockUserManager.Verify(m => m.UpdateAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangeUserNameAsync_ThrowsException_WhenUserUpdateFails()
+    {
+        // Arrange
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = "OldUserName" };
+        var newUserName = "NewUserName";
+
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Update failed" }));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.ChangeUserNameAsync(newUserName));
+        Assert.Equal("Failed to update UserName.", exception.Message);
+    }
+
+    [Fact]
+    public async Task ChangeUserNameAsync_ThrowsException_WhenUserNotFound()
+    {
+        // Arrange
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ThrowsAsync(new KeyNotFoundException("User not found."));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.AuthService.ChangeUserNameAsync("NewUserName"));
+        Assert.Equal("User not found.", exception.Message);
+    }
+
+    #endregion
 
     #region ChangePassword
 

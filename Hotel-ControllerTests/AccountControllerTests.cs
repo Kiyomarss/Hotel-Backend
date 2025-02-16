@@ -19,6 +19,78 @@ namespace Hotel_ControllerTests
             _controller = new AccountController(_mockAuthService.Object);
         }
 
+        #region ChangePersonName
+
+        [Fact]
+        public async Task ChangePersonName_ReturnsOk_WhenPersonNameChangesSuccessfully()
+        {
+            // Arrange
+            var newPersonName = "NewPerson123";
+
+            _mockAuthService.Setup(s => s.ChangePersonNameAsync(newPersonName))
+                            .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.ChangePersonName(newPersonName);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(okResult.Value);
+            Assert.Equal("PersonName updated successfully.", response.Message);
+        }
+
+        [Fact]
+        public async Task ChangePersonName_ThrowsException_WhenChangePersonNameFails()
+        {
+            // Arrange
+            var newPersonName = "InvalidPerson";
+
+            _mockAuthService.Setup(s => s.ChangePersonNameAsync(newPersonName))
+                            .ThrowsAsync(new InvalidOperationException("Failed to update PersonName."));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ChangePersonName(newPersonName));
+            Assert.Equal("Failed to update PersonName.", exception.Message);
+        }
+
+        #endregion
+        
+        #region ChangeUserName
+
+        [Fact]
+        public async Task ChangeUserName_ReturnsOk_WhenUserNameChangesSuccessfully()
+        {
+            // Arrange
+            var newUserName = "NewUser123";
+
+            _mockAuthService.Setup(s => s.ChangeUserNameAsync(newUserName))
+                            .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.ChangeUserName(newUserName);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(okResult.Value);
+            Assert.Equal("UserName updated successfully.", response.Message);
+        }
+
+        [Fact]
+        public async Task ChangeUserName_ThrowsException_WhenChangeUserNameFails()
+        {
+            // Arrange
+            var newUserName = "InvalidUser";
+
+            _mockAuthService.Setup(s => s.ChangeUserNameAsync(newUserName))
+                            .ThrowsAsync(new InvalidOperationException("Failed to update UserName."));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ChangeUserName(newUserName));
+            Assert.Equal("Failed to update UserName.", exception.Message);
+        }
+
+        #endregion
+
         #region ChangePassword
 
         [Fact]

@@ -66,7 +66,6 @@ namespace Hotel_UI.Controllers
             return Ok(new MessageResponse("PersonName updated successfully."));
         }
 
-
         [HttpPost]
         [Consumes("application/octet-stream")]
         public async Task<IActionResult> UpdateAvatar()
