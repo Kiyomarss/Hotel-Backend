@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Hotel_Core.ServiceContracts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace Hotel_Core.Services
 {
@@ -114,7 +116,6 @@ namespace Hotel_Core.Services
             if (!updateResult.Succeeded)
                 throw new InvalidOperationException("Failed to update PersonName.");
         }
-
         public async Task<string> UpdateAvatarAsync(Stream avatarStream)
         {
             var user = await _identityService.GetCurrentUserAsync();
@@ -138,12 +139,14 @@ namespace Hotel_Core.Services
             var fileName = $"{Guid.NewGuid()}.jpg";
             var filePath = Path.Combine(avatarFolderPath, fileName);
 
-            await using var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-            await fileStream.CopyToAsync(outputStream);
+            using (var image = await Image.LoadAsync(fileStream))
+            {
+                // تبدیل تصویر به JPEG
+                await image.SaveAsJpegAsync(filePath, new JpegEncoder{ Quality = 90 });
+            }
 
             return $"/avatars/{fileName}";
         }
-
         public async Task DeleteUserAsync(string userId)
         {
             var user = await _identityService.GetUserByIdAsync(userId);

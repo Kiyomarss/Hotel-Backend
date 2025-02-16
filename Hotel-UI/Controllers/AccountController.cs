@@ -67,15 +67,17 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        [Consumes("application/octet-stream")]
-        public async Task<IActionResult> UpdateAvatar()
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateAvatar([FromForm] UpdateAvatarRequest request)
         {
-            if (Request.ContentLength is null or 0)
+            if (request.Avatar.Length == 0)
                 return BadRequest(new MessageResponse("No avatar file provided."));
 
-            var result = await _authService.UpdateAvatarAsync(Request.Body);
+            await using var stream = request.Avatar.OpenReadStream();
+    
+            var result = await _authService.UpdateAvatarAsync(stream);
 
-            return Ok(new DataResponse<string>(result));
+            return Ok(result);
         }
         
         [HttpDelete("{userId}")]
