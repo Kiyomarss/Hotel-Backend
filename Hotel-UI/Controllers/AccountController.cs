@@ -51,7 +51,7 @@ namespace Hotel_UI.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> ChangeUserName([FromBody] string newUserName)
+        public async Task<IActionResult> ChangeUserName(string newUserName)
         {
             await _authService.ChangeUserNameAsync(newUserName);
 
@@ -59,7 +59,7 @@ namespace Hotel_UI.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> ChangePersonName([FromBody] string newPersonName)
+        public async Task<IActionResult> ChangePersonName(string newPersonName)
         {
             await _authService.ChangePersonNameAsync(newPersonName);
 
@@ -67,7 +67,7 @@ namespace Hotel_UI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateAvatar([FromForm] UpdateAvatarRequest request)
+        public async Task<IActionResult> UpdateAvatar(UpdateAvatarRequest request)
         {
             if (request.Avatar.Length == 0)
                 return BadRequest(new MessageResponse("No avatar file provided."));
