@@ -19,6 +19,72 @@ namespace Hotel_ControllerTests
             _controller = new AccountController(_mockAuthService.Object);
         }
 
+        #region UpdateAvatar
+        
+        [Fact]
+        public async Task UpdateAvatar_ReturnsOk_WhenFileIsValid()
+        {
+            // Arrange
+            var validStream = new MemoryStream(new byte[1024]); // فایل با حجم 1 کیلوبایت
+            var mockFormFile = new Mock<IFormFile>();
+            mockFormFile.Setup(f => f.Length).Returns(1024); // حجم فایل معتبر
+            mockFormFile.Setup(f => f.OpenReadStream()).Returns(validStream);
+
+            var request = new UpdateAvatarRequest(mockFormFile.Object);
+
+            var expectedAvatarPath = "/avatars/new-avatar.jpg";
+            _mockAuthService.Setup(s => s.UpdateAvatarAsync(It.IsAny<Stream>()))
+                            .ReturnsAsync(expectedAvatarPath);
+
+            // Act
+            var result = await _controller.UpdateAvatar(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(expectedAvatarPath, okResult.Value);
+        }
+        
+        [Fact]
+        public async Task UpdateAvatar_ThrowsException_WhenServiceFails()
+        {
+            // Arrange
+            var validStream = new MemoryStream(new byte[1024]); // فایل با حجم 1 کیلوبایت
+            var mockFormFile = new Mock<IFormFile>();
+            mockFormFile.Setup(f => f.Length).Returns(1024); // حجم فایل معتبر
+            mockFormFile.Setup(f => f.OpenReadStream()).Returns(validStream);
+
+            var request = new UpdateAvatarRequest(mockFormFile.Object);
+
+            _mockAuthService.Setup(s => s.UpdateAvatarAsync(It.IsAny<Stream>()))
+                            .ThrowsAsync(new InvalidOperationException("Update Failed."));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.UpdateAvatar(request));
+            Assert.Equal("Update Failed.", exception.Message);
+        }
+        
+        [Fact]
+        public async Task UpdateAvatar_ReturnsBadRequest_WhenFileIsEmpty()
+        {
+            // Arrange
+            var emptyStream = new MemoryStream(); // فایل با حجم صفر
+            var mockFormFile = new Mock<IFormFile>();
+            mockFormFile.Setup(f => f.Length).Returns(0); // حجم فایل صفر
+            mockFormFile.Setup(f => f.OpenReadStream()).Returns(emptyStream);
+
+            var request = new UpdateAvatarRequest(mockFormFile.Object);
+
+            // Act
+            var result = await _controller.UpdateAvatar(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            var messageResponse = Assert.IsType<MessageResponse>(badRequestResult.Value);
+            Assert.Equal("No avatar file provided.", messageResponse.Message);
+        }
+
+        #endregion
+
         #region ChangePersonName
 
         [Fact]

@@ -131,7 +131,7 @@ namespace Hotel_Core.Services
             return avatarPath;
         }
 
-        private async Task<string> SaveNewAvatarFromStreamAsync(Stream fileStream)
+        public virtual async Task<string> SaveNewAvatarFromStreamAsync(Stream fileStream)
         {
             var avatarFolderPath = Path.Combine("wwwroot", "avatars");
             Directory.CreateDirectory(avatarFolderPath);

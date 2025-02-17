@@ -1,9 +1,13 @@
+using System.Reflection;
 using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Core.DTO;
 using Hotel_Core.DTO.Auth;
+using Hotel_Core.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Hotel_ServiceTests;
 public class AuthServiceTests : IClassFixture<AuthServiceFixture>
@@ -19,6 +23,85 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
     {
         _fixture.MockUserManager.Reset();
     }
+
+    #region UpdateAvatar
+    
+    [Fact]
+    public async Task UpdateAvatarAsync_ThrowsException_WhenUserNotFound()
+    {
+        // Arrange
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+            .ThrowsAsync(new KeyNotFoundException("User not found."));
+
+        using var fakeStream = new MemoryStream(new byte[] { 1, 2, 3 });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _fixture.AuthService.UpdateAvatarAsync(fakeStream));
+
+        Assert.Equal("User not found.", exception.Message);
+    }
+
+    [Fact]
+    public async Task UpdateAvatarAsync_ThrowsException_WhenUpdateFails()
+    {
+        // Arrange
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = "TestUser" };
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Update failed" }));
+
+        using var fakeStream = new MemoryStream();
+        using (var image = new Image<Rgba32>(100, 100))
+        {
+            await image.SaveAsJpegAsync(fakeStream);
+        }
+        fakeStream.Seek(0, SeekOrigin.Begin);
+        
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _fixture.AuthService.UpdateAvatarAsync(fakeStream));
+
+        Assert.Equal("Update Failed.", exception.Message);
+    }
+
+    [Fact]
+    public async Task UpdateAvatarAsync_ReturnsCorrectPath_WhenUpdateSucceeds()
+    {
+        // Arrange
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = "TestUser" };
+        _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
+                .ReturnsAsync(user);
+
+        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+        using var fakeStream = new MemoryStream();
+        using (var image = new Image<Rgba32>(100, 100))
+        {
+            await image.SaveAsJpegAsync(fakeStream);
+        }
+        fakeStream.Seek(0, SeekOrigin.Begin);
+        
+        var expectedAvatarPath = "/avatars/test-avatar.jpg";
+        var authService = new Mock<AuthService>(_fixture.MockUserManager.Object, null, null, _fixture.MockIdentityService.Object)
+        {
+            CallBase = true
+        };
+
+        authService.Setup(a => a.SaveNewAvatarFromStreamAsync(It.IsAny<Stream>()))
+            .ReturnsAsync(expectedAvatarPath);
+
+        // Act
+        var result = await authService.Object.UpdateAvatarAsync(fakeStream);
+
+        // Assert
+        Assert.Equal(expectedAvatarPath, result);
+    }
+
+    #endregion
     
     #region ChangePersonName
     
