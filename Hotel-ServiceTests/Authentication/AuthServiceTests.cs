@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Security.Claims;
 using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Core.DTO;
 using Hotel_Core.DTO.Auth;
@@ -102,7 +104,159 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
     }
 
     #endregion
-    
+
+    #region SaveNewAvatarFromStreamAsync
+
+    [Fact]
+    public async Task SaveNewAvatarFromStreamAsync_SavesImageAndReturnsCorrectPath()
+    {
+        // Arrange
+        var authService = new AuthService(null, null, null, null); // مقداردهی null برای وابستگی‌های غیرضروری
+        using var fakeStream = new MemoryStream();
+        using (var image = new Image<Rgba32>(100, 100))
+        {
+            await image.SaveAsJpegAsync(fakeStream);
+        }
+        fakeStream.Seek(0, SeekOrigin.Begin);
+
+        // Act
+        var result = await authService.SaveNewAvatarFromStreamAsync(fakeStream);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.StartsWith("/avatars/", result);
+
+        var expectedFilePath = Path.Combine("wwwroot", "avatars", Path.GetFileName(result));
+        Assert.True(File.Exists(expectedFilePath),"");
+
+        // Clean up
+        File.Delete(expectedFilePath);
+    }
+
+    #endregion
+
+    #region GenerateJwtToken
+
+    [Fact]
+    public async Task GenerateJwtToken_ReturnsToken_WhenConfigurationIsValid()
+    {
+        // Arrange
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(), Email = "test@example.com",
+        };
+
+        var roles = new List<string>
+        {
+            "Admin", "User"
+        };
+
+        _fixture.MockUserManager.Setup(m => m.GetRolesAsync(user))
+                .ReturnsAsync(roles);
+
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Key"])
+                .Returns("your-very-secure-and-long-secret-key!!");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Issuer"])
+                .Returns("validIssuer");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Audience"])
+                .Returns("validAudience");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:ExpirationHours"])
+                .Returns("2");
+
+        // Act
+        var token = await _fixture.AuthService.GenerateJwtToken(user);
+
+        // Assert
+        Assert.NotNull(token);
+        Assert.Contains("eyJ", token); // JWT token starts with "eyJ"
+    }
+
+    [Fact]
+    public async Task GenerateJwtToken_ThrowsInvalidOperationException_WhenJwtKeyIsNotConfigured()
+    {
+        // Arrange
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            Email = "test@example.com",
+        };
+
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Key"]).Returns(string.Empty);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fixture.AuthService.GenerateJwtToken(user));
+
+        Assert.Equal("JWT Key is not configured.", exception.Message);
+    }
+
+    [Fact]
+    public async Task GenerateJwtToken_ReturnsTokenWithRoles_WhenUserHasRoles()
+    {
+        // Arrange
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(), 
+            Email = "test@example.com",
+        };
+
+        var roles = new List<string>
+        {
+            "Admin", "User"
+        };
+
+        _fixture.MockUserManager.Setup(m => m.GetRolesAsync(user))
+                .ReturnsAsync(roles);
+
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Key"])
+                .Returns("your-very-secure-and-long-secret-key!!");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Issuer"])
+                .Returns("validIssuer");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Audience"])
+                .Returns("validAudience");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:ExpirationHours"])
+                .Returns("2");
+
+        // Act
+        var token = await _fixture.AuthService.GenerateJwtToken(user);
+
+        // Decode the JWT token to extract the payload and claims
+        var handler = new JwtSecurityTokenHandler();
+        var jsonToken = handler.ReadJwtToken(token);
+        var roleClaims = jsonToken?.Claims?.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+
+        // Assert
+        Assert.Contains("Admin", roleClaims); // The "Admin" role should be in the token
+        Assert.Contains("User", roleClaims);  // The "User" role should be in the token
+    }
+
+    [Fact]
+    public async Task GenerateJwtToken_ThrowsException_WhenUserHasNoRoles()
+    {
+        // Arrange
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(), Email = "test@example.com",
+        };
+
+        _fixture.MockUserManager.Setup(m => m.GetRolesAsync(user))
+                .ReturnsAsync(new List<string>());
+
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Key"])
+                .Returns("your-very-secure-and-long-secret-key!!");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Issuer"])
+                .Returns("validIssuer");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Audience"])
+                .Returns("validAudience");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:ExpirationHours"])
+                .Returns("2");
+
+        // Act & Assert
+        var token = await _fixture.AuthService.GenerateJwtToken(user);
+        Assert.NotNull(token); // Even without roles, the token should be returned
+    }
+
+    #endregion
+  
     #region ChangePersonName
     
     [Fact]
@@ -327,9 +481,14 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         _fixture.MockUserManager.Setup(m => m.CheckPasswordAsync(user, request.Password))
                 .ReturnsAsync(true);
 
-        var token = await _fixture.AuthService.GenerateJwtToken(user);
-        Assert.NotNull(token);
-
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Key"])
+                .Returns("your-very-secure-and-long-secret-key!!");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Issuer"])
+                .Returns("validIssuer");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:Audience"])
+                .Returns("validAudience");
+        _fixture.MockConfiguration.SetupGet(c => c["Jwt:ExpirationHours"])
+                .Returns("2");
 
         // Act
         var result = await _fixture.AuthService.LoginAsync(request);
@@ -337,7 +496,6 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result.Token);
-        ;
         Assert.Equal(user.PersonName, result.User.PersonName);
         Assert.Equal(user.Email, result.User.Email);
         Assert.Equal(user.AvatarPath, result.User.AvatarPath);

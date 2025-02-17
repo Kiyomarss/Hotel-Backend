@@ -59,29 +59,46 @@ namespace Hotel_Core.Services
 
         public async Task<string> GenerateJwtToken(ApplicationUser user)
         {
-            var claims = new List<Claim>
+            var key = _configuration["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(key))
             {
-                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()), new(JwtRegisteredClaimNames.Email, user.Email), new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), new(JwtRegisteredClaimNames.NameId, user.Id.ToString())
-            };
-
-            var roles = await _userManager.GetRolesAsync(user);
-            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-            var secretKey = _configuration["Jwt:Key"];
-
-            if (string.IsNullOrEmpty(secretKey))
                 throw new InvalidOperationException("JWT Key is not configured.");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            }
 
             var issuer = _configuration["Jwt:Issuer"];
             var audience = _configuration["Jwt:Audience"];
-            var expiration = DateTime.UtcNow.AddHours(int.TryParse(_configuration["Jwt:ExpirationHours"], out var hours) ? hours : 2);
+            var expirationHours = _configuration["Jwt:ExpirationHours"];
 
-            var token = new JwtSecurityToken(issuer, audience, claims, expires: expiration, signingCredentials: creds);
+            if (string.IsNullOrWhiteSpace(issuer) || string.IsNullOrWhiteSpace(audience) || string.IsNullOrWhiteSpace(expirationHours))
+            {
+                throw new InvalidOperationException("JWT configuration is incomplete.");
+            }
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()), new(JwtRegisteredClaimNames.Email, user.Email)
+            };
+
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(expirationHours)),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = credentials
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
         }
 
         public async Task ChangePasswordAsync(ChangePasswordRequest request)
@@ -116,6 +133,7 @@ namespace Hotel_Core.Services
             if (!updateResult.Succeeded)
                 throw new InvalidOperationException("Failed to update PersonName.");
         }
+        
         public async Task<string> UpdateAvatarAsync(Stream avatarStream)
         {
             var user = await _identityService.GetCurrentUserAsync();
