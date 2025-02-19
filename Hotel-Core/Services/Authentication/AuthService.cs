@@ -144,7 +144,12 @@ namespace Hotel_Core.Services
             var updateResult = await _userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
+            {
+                if (File.Exists(Path.Combine("wwwroot", avatarPath)))
+                    File.Delete(Path.Combine("wwwroot", avatarPath));
+
                 throw new InvalidOperationException("Update Failed.");
+            }
 
             return avatarPath;
         }
