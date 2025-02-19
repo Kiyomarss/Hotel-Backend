@@ -222,7 +222,7 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         // Decode the JWT token to extract the payload and claims
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadJwtToken(token);
-        var roleClaims = jsonToken?.Claims?.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+        var roleClaims = jsonToken?.Claims?.Where(c => c.Type == "role").Select(c => c.Value).ToList();
 
         // Assert
         Assert.Contains("Admin", roleClaims); // The "Admin" role should be in the token
