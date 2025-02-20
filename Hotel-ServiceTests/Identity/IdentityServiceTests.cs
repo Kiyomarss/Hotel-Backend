@@ -65,6 +65,41 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
 
     #endregion
 
+    #region IsUserLoggedIn
+
+    [Fact]
+    public void IsUserLoggedIn_ShouldReturnTrue_WhenUserIsLoggedIn()
+    {
+        // Arrange
+        var userId = "testUserId";
+        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId)
+        }));
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(claimsPrincipal);
+
+        // Act
+        var result = _fixture.IdentityService.IsUserLoggedIn();
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsUserLoggedIn_ShouldReturnFalse_WhenUserIsNotLoggedIn()
+    {
+        // Arrange
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns((ClaimsPrincipal)null);
+
+        // Act
+        var result = _fixture.IdentityService.IsUserLoggedIn();
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
+
     #region GetCurrentUserAsync
 
     [Fact]

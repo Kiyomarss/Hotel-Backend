@@ -23,6 +23,11 @@ namespace Hotel_Core.Services
             return user?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
         
+        public bool IsUserLoggedIn()
+        {
+            return !string.IsNullOrEmpty(GetLoggedInUserId());
+        }
+        
         public async Task<ApplicationUser> GetCurrentUserAsync()
         {
             var userId = GetLoggedInUserId();
@@ -83,12 +88,7 @@ namespace Hotel_Core.Services
             var user = await _userManager.FindByIdAsync(userId);
             return user != null && await _userManager.IsInRoleAsync(user, roleName);
         }
-        
-        public bool IsUserLoggedIn()
-        {
-            return !string.IsNullOrEmpty(GetLoggedInUserId());
-        }
-        
+
         public async Task<IList<string>> GetCurrentUserRolesAsync()
         {
             var userId = GetLoggedInUserId();
