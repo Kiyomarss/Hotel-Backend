@@ -474,4 +474,85 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
 
     #endregion
 
+    #region CurrentUserHasAllRolesAsync
+
+    [Fact]
+    public async Task CurrentUserHasAllRolesAsync_ShouldReturnTrue_WhenUserHasAllRoles()
+    {
+        // Arrange
+        var roles = new List<string>
+        {
+            "Admin", "User", "Manager"
+        };
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "testUserId")
+        })));
+
+        var applicationUser = new ApplicationUser
+        {
+            Id = Guid.NewGuid()
+        };
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync("testUserId")).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser)).ReturnsAsync(roles);
+
+        // Act
+        var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin", "User");
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task CurrentUserHasAllRolesAsync_ShouldReturnFalse_WhenUserLacksSomeRoles()
+    {
+        // Arrange
+        var roles = new List<string>
+        {
+            "Admin", "User"
+        };
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "testUserId")
+        })));
+
+        var applicationUser = new ApplicationUser
+        {
+            Id = Guid.NewGuid()
+        };
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync("testUserId")).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser)).ReturnsAsync(roles);
+
+        // Act
+        var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin", "Manager");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task CurrentUserHasAllRolesAsync_ShouldReturnFalse_WhenUserHasNoRoles()
+    {
+        // Arrange
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "testUserId")
+        })));
+
+        var applicationUser = new ApplicationUser
+        {
+            Id = Guid.NewGuid()
+        };
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync("testUserId")).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser)).ReturnsAsync(new List<string>());
+
+        // Act
+        var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
+
 }
