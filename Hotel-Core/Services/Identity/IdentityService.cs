@@ -38,6 +38,15 @@ namespace Hotel_Core.Services
             return user;
         }
 
+        public async Task<ApplicationUser?> GetCurrentUserWithoutErrorAsync()
+        {
+            var userId = GetLoggedInUserId();
+            if (string.IsNullOrEmpty(userId))
+                return null;
+
+            return await _userManager.FindByIdAsync(userId);
+        }
+
         public async Task<ApplicationUser> GetUserByIdAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -49,15 +58,6 @@ namespace Hotel_Core.Services
                 throw new KeyNotFoundException("User not found.");
 
             return user;
-        }
-
-        public async Task<ApplicationUser?> GetCurrentUserWithoutErrorAsync()
-        {
-            var userId = GetLoggedInUserId();
-            if (string.IsNullOrEmpty(userId))
-                return null;
-
-            return await _userManager.FindByIdAsync(userId);
         }
 
         public async Task<bool> CurrentUserHasAnyRoleAsync(params string[] roleNames)
