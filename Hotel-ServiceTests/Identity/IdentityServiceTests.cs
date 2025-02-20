@@ -124,7 +124,68 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
 
     #endregion
 
-    
+    #region GetCurrentUserWithoutErrorAsync
+
+    [Fact]
+    public async Task GetCurrentUserWithoutErrorAsync_ShouldReturnUser_WhenUserExists()
+    {
+        // Arrange
+        var userId = "testUserId";
+        var applicationUser = new ApplicationUser { Id = Guid.NewGuid() };
+
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
+                .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userId)
+                })));
+
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
+                .ReturnsAsync(applicationUser);
+
+        // Act
+        var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(applicationUser, result);
+    }
+
+    [Fact]
+    public async Task GetCurrentUserWithoutErrorAsync_ShouldReturnNull_WhenUserIsNotLoggedIn()
+    {
+        // Arrange
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext).Returns((HttpContext)null);
+
+        // Act
+        var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetCurrentUserWithoutErrorAsync_ShouldReturnNull_WhenUserDoesNotExist()
+    {
+        // Arrange
+        var userId = "testUserId";
+
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
+                .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userId)
+                })));
+
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
+                .ReturnsAsync((ApplicationUser)null);
+
+        // Act
+        var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    #endregion
 
 
 }
