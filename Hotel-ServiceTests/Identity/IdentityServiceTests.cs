@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ContactsManager.Core.Domain.IdentityEntities;
+using Hotel_Core.Constant;
 using Microsoft.AspNetCore.Http;
 using Moq;
 
@@ -555,4 +556,101 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
 
     #endregion
 
+    #region HasAccessAsync
+
+    [Fact]
+    public async Task HasAccessAsync_ShouldReturnTrue_WhenUserHasFullAccessClaim()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var applicationUser = new ApplicationUser
+        {
+            Id = userId
+        };
+        var claims = new List<Claim>
+        {
+            new(Constant.Claims.FullAccess, "true")
+        };
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+        })));
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(applicationUser)).ReturnsAsync(claims);
+
+        // Act
+        var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task HasAccessAsync_ShouldReturnTrue_WhenUserHasRequiredPermissionClaim()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var applicationUser = new ApplicationUser
+        {
+            Id = userId
+        };
+        var claims = new List<Claim>
+        {
+            new("Permission", "SomePermission") // Permission claim
+        };
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+        })));
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(applicationUser)).ReturnsAsync(claims);
+
+        // Act
+        var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task HasAccessAsync_ShouldReturnFalse_WhenUserLacksAccessClaim()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var applicationUser = new ApplicationUser
+        {
+            Id = userId
+        };
+        var claims = new List<Claim>
+        {
+            new("Permission", "OtherPermission") // Some permission other than the required one
+        };
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+        })));
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(applicationUser)).ReturnsAsync(claims);
+
+        // Act
+        var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task HasAccessAsync_ShouldReturnFalse_WhenUserDoesNotExist()
+    {
+        // Arrange
+        _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal()); // No user logged in
+
+        // Act
+        var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
 }
