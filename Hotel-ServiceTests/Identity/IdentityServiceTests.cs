@@ -187,5 +187,47 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
 
     #endregion
 
+    #region GetUserByIdAsync
+
+    [Fact]
+    public async Task GetUserByIdAsync_ShouldReturnUser_WhenUserExists()
+    {
+        // Arrange
+        var userId = "testUserId";
+        var applicationUser = new ApplicationUser { Id = Guid.NewGuid() };
+
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
+                .ReturnsAsync(applicationUser);
+
+        // Act
+        var result = await _fixture.IdentityService.GetUserByIdAsync(userId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(applicationUser, result);
+    }
+
+    [Fact]
+    public async Task GetUserByIdAsync_ShouldThrowArgumentException_WhenUserIdIsNullOrEmpty()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _fixture.IdentityService.GetUserByIdAsync(null!));
+        await Assert.ThrowsAsync<ArgumentException>(() => _fixture.IdentityService.GetUserByIdAsync(""));
+    }
+
+    [Fact]
+    public async Task GetUserByIdAsync_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist()
+    {
+        // Arrange
+        var userId = "nonExistingUserId";
+
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
+                .ReturnsAsync((ApplicationUser)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.IdentityService.GetUserByIdAsync(userId));
+    }
+    
+    #endregion
 
 }
