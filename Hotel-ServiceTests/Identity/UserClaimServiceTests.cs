@@ -77,4 +77,91 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
     }
 
     #endregion
+
+    #region RemoveClaimFromUserAsync
+
+    [Fact]
+    public async Task RemoveClaimFromUserAsync_ShouldReturnTrue_WhenClaimIsRemovedSuccessfully()
+    {
+        var userId = Guid.NewGuid().ToString();
+        var claimType = "Permission";
+        var claimValue = "Admin";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+
+        var claims = _fixture.GetClaims();
+        claims.Add(new Claim(claimType, claimValue));
+
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
+        _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(mockUser.Object, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.True(result);
+    }
+    
+    [Fact]
+    public async Task RemoveClaimFromUserAsync_ShouldReturnFalse_WhenUserDoesNotExist()
+    {
+        // Arrange
+        var userId = "nonExistentUserId";
+        var claimType = "Permission";
+        var claimValue = "Admin";
+
+        // Setup the mock for FindByIdAsync to return null (user not found)
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync((ApplicationUser)null);
+
+        // Act
+        var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task RemoveClaimFromUserAsync_ShouldReturnFalse_WhenClaimDoesNotExist()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var claimType = "Permission";
+        var claimValue = "Admin";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+
+        // Setup the mock for FindByIdAsync and GetClaimsAsync
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(new List<Claim>());
+
+        // Act
+        var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task RemoveClaimFromUserAsync_ShouldReturnFalse_WhenRemoveClaimFails()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var claimType = "Permission";
+        var claimValue = "Admin";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+
+        // Setup the mock for FindByIdAsync and GetClaimsAsync
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(_fixture.GetClaims());
+        _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(mockUser.Object, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Failed());
+
+        // Act
+        var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
+
 }
