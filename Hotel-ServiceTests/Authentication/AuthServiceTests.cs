@@ -324,7 +324,7 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
                 .ReturnsAsync(user);
 
-        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+        _fixture.MockUserManager.Setup(m => m.SetUserNameAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
 
         // Act
@@ -332,7 +332,7 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
 
         // Assert
         Assert.Equal(newUserName, user.UserName);
-        _fixture.MockUserManager.Verify(m => m.UpdateAsync(user), Times.Once);
+        _fixture.MockUserManager.Verify(m => m.SetUserNameAsync(user, newUserName), Times.Once);
     }
 
     [Fact]
@@ -345,7 +345,7 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         _fixture.MockIdentityService.Setup(s => s.GetCurrentUserAsync())
                 .ReturnsAsync(user);
 
-        _fixture.MockUserManager.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+        _fixture.MockUserManager.Setup(m => m.SetUserNameAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Update failed" }));
 
         // Act & Assert
