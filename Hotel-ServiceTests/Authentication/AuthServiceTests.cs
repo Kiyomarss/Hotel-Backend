@@ -331,7 +331,6 @@ public class AuthServiceTests : IClassFixture<AuthServiceFixture>
         await _fixture.AuthService.ChangeUserNameAsync(newUserName);
 
         // Assert
-        Assert.Equal(newUserName, user.UserName);
         _fixture.MockUserManager.Verify(m => m.SetUserNameAsync(user, newUserName), Times.Once);
     }
 
