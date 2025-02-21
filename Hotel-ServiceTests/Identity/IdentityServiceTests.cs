@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ContactsManager.Core.Domain.IdentityEntities;
+using FluentAssertions;
 using Hotel_Core.Constant;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -32,8 +33,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         // Act
         var result = _fixture.IdentityService.GetLoggedInUserId();
 
-        // Assert
-        Assert.Equal(userId, result);
+        // Assert;
+        result.Should().Be(userId);
     }
 
     [Fact]
@@ -46,7 +47,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = _fixture.IdentityService.GetLoggedInUserId();
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = _fixture.IdentityService.GetLoggedInUserId();
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     #endregion
@@ -83,7 +84,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = _fixture.IdentityService.IsUserLoggedIn();
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -96,7 +97,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = _fixture.IdentityService.IsUserLoggedIn();
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -123,8 +124,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.GetCurrentUserAsync();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(userId, result.Id);
+        result.Should().NotBeNull();
+        result.Id.Should().Be(userId);
     }
 
     [Fact]
@@ -142,9 +143,13 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         // Mocking UserManager to return null (user not found)
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync((ApplicationUser)null);
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.IdentityService.GetCurrentUserAsync());
-        Assert.Equal("User not found.", exception.Message);
+        // Act
+        var act = async () => await _fixture.IdentityService.GetCurrentUserAsync();
+
+        // Assert
+        await act.Should()
+                 .ThrowAsync<KeyNotFoundException>()
+                 .WithMessage("User not found.");
     }
 
     [Fact]
@@ -153,9 +158,13 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         // Arrange
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.IdentityService.GetCurrentUserAsync());
-        Assert.Equal("User not found.", exception.Message);
+        // Act
+        var act = async () => await _fixture.IdentityService.GetCurrentUserAsync();
+
+        // Assert
+        await act.Should()
+                 .ThrowAsync<KeyNotFoundException>()
+                 .WithMessage("User not found.");
     }
 
     #endregion
@@ -182,8 +191,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(applicationUser, result);
+        result.Should().NotBeNull();
+        result.Should().Be(applicationUser);
     }
 
     [Fact]
@@ -196,7 +205,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -218,7 +227,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     #endregion
@@ -239,16 +248,18 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.GetUserByIdAsync(userId);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(applicationUser, result);
+        result.Should().NotBeNull();
+        result.Should().Be(applicationUser);
     }
 
-    [Fact]
-    public async Task GetUserByIdAsync_ShouldThrowArgumentException_WhenUserIdIsNullOrEmpty()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task GetUserByIdAsync_ShouldThrowArgumentException_WhenUserIdIsNullOrEmpty(string userId)
     {
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => _fixture.IdentityService.GetUserByIdAsync(null!));
-        await Assert.ThrowsAsync<ArgumentException>(() => _fixture.IdentityService.GetUserByIdAsync(""));
+        await FluentActions.Awaiting(() => _fixture.IdentityService.GetUserByIdAsync(userId))
+                           .Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
@@ -261,9 +272,10 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
                 .ReturnsAsync((ApplicationUser)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => _fixture.IdentityService.GetUserByIdAsync(userId));
+        await FluentActions.Awaiting(() => _fixture.IdentityService.GetUserByIdAsync(userId))
+                           .Should().ThrowAsync<KeyNotFoundException>();
     }
-    
+
     #endregion
 
     #region CurrentUserHasAnyRoleAsync
@@ -298,7 +310,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAnyRoleAsync("Admin", "Manager");
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -331,7 +343,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAnyRoleAsync("Admin", "Manager");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -345,7 +357,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAnyRoleAsync("Admin");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -367,7 +379,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAnyRoleAsync("Admin");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -401,7 +413,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasRoleAsync(roleName);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -431,7 +443,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasRoleAsync(roleName);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -447,7 +459,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasRoleAsync(roleName);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -470,7 +482,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasRoleAsync(roleName);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -501,7 +513,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin", "User");
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -528,7 +540,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin", "Manager");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -551,7 +563,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -582,7 +594,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -609,7 +621,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -636,7 +648,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -649,7 +661,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
