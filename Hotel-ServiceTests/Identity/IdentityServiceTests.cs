@@ -109,7 +109,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var applicationUser = new ApplicationUser { Id = userId };
+        var mockUser = _fixture.GetMockUser(userId);
     
         // Mocking GetLoggedInUserId to return the test user ID
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[] 
@@ -118,7 +118,7 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         })));
     
         // Mocking UserManager to return the applicationUser
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(mockUser.Object);
 
         // Act
         var result = await _fixture.IdentityService.GetCurrentUserAsync();
@@ -175,25 +175,26 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task GetCurrentUserWithoutErrorAsync_ShouldReturnUser_WhenUserExists()
     {
         // Arrange
-        var userId = "testUserId";
-        var applicationUser = new ApplicationUser { Id = Guid.NewGuid() };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
-                .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
+                .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[] 
                 {
                     new Claim(ClaimTypes.NameIdentifier, userId)
                 })));
 
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
-                .ReturnsAsync(applicationUser);
+                .ReturnsAsync(mockUser.Object);
 
         // Act
         var result = await _fixture.IdentityService.GetCurrentUserWithoutErrorAsync();
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().Be(applicationUser);
+        result!.Id.Should().Be(mockUser.Object.Id);
     }
+
 
     [Fact]
     public async Task GetCurrentUserWithoutErrorAsync_ShouldReturnNull_WhenUserIsNotLoggedIn()
@@ -238,18 +239,18 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task GetUserByIdAsync_ShouldReturnUser_WhenUserExists()
     {
         // Arrange
-        var userId = "testUserId";
-        var applicationUser = new ApplicationUser { Id = Guid.NewGuid() };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
-                .ReturnsAsync(applicationUser);
+                .ReturnsAsync(mockUser.Object);
 
         // Act
         var result = await _fixture.IdentityService.GetUserByIdAsync(userId);
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().Be(applicationUser);
+        result.Id.Should().Be(mockUser.Object.Id);
     }
 
     [Theory]
@@ -284,15 +285,12 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task CurrentUserHasAnyRoleAsync_ShouldReturnTrue_WhenUserHasAtLeastOneRole()
     {
         // Arrange
-        var userId = "testUserId";
         var roles = new List<string>
         {
             "Admin", "User"
         };
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
                 .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -301,9 +299,9 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
                 })));
 
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
-                .ReturnsAsync(applicationUser);
+                .ReturnsAsync(mockUser.Object);
 
-        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser))
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(mockUser.Object))
                 .ReturnsAsync(roles);
 
         // Act
@@ -317,15 +315,12 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task CurrentUserHasAnyRoleAsync_ShouldReturnFalse_WhenUserHasNoMatchingRole()
     {
         // Arrange
-        var userId = "testUserId";
         var roles = new List<string>
         {
             "User"
         };
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
                 .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -334,9 +329,9 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
                 })));
 
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
-                .ReturnsAsync(applicationUser);
+                .ReturnsAsync(mockUser.Object);
 
-        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser))
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(mockUser.Object))
                 .ReturnsAsync(roles);
 
         // Act
@@ -390,12 +385,9 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task CurrentUserHasRoleAsync_ShouldReturnTrue_WhenUserHasRole()
     {
         // Arrange
-        var userId = "testUserId";
         var roleName = "Admin";
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
                 .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -404,9 +396,9 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
                 })));
 
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
-                .ReturnsAsync(applicationUser);
+                .ReturnsAsync(mockUser.Object);
 
-        _fixture.MockUserManager.Setup(x => x.IsInRoleAsync(applicationUser, roleName))
+        _fixture.MockUserManager.Setup(x => x.IsInRoleAsync(mockUser.Object, roleName))
                 .ReturnsAsync(true);
 
         // Act
@@ -420,12 +412,9 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task CurrentUserHasRoleAsync_ShouldReturnFalse_WhenUserDoesNotHaveRole()
     {
         // Arrange
-        var userId = "testUserId";
         var roleName = "Admin";
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User)
                 .Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -434,9 +423,9 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
                 })));
 
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
-                .ReturnsAsync(applicationUser);
+                .ReturnsAsync(mockUser.Object);
 
-        _fixture.MockUserManager.Setup(x => x.IsInRoleAsync(applicationUser, roleName))
+        _fixture.MockUserManager.Setup(x => x.IsInRoleAsync(mockUser.Object, roleName))
                 .ReturnsAsync(false);
 
         // Act
@@ -499,15 +488,14 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         };
         _fixture.MockHttpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, "testUserId")
+            new Claim(ClaimTypes.NameIdentifier, "1cfb4096-1f1c-4381-897c-08dd348ace72")
         })));
 
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync("testUserId")).ReturnsAsync(applicationUser);
-        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser)).ReturnsAsync(roles);
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+        
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(mockUser.Object)).ReturnsAsync(roles);
 
         // Act
         var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin", "User");
@@ -529,12 +517,11 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
             new Claim(ClaimTypes.NameIdentifier, "testUserId")
         })));
 
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync("testUserId")).ReturnsAsync(applicationUser);
-        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser)).ReturnsAsync(roles);
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+        
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(mockUser.Object)).ReturnsAsync(roles);
 
         // Act
         var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin", "Manager");
@@ -552,12 +539,11 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
             new Claim(ClaimTypes.NameIdentifier, "testUserId")
         })));
 
-        var applicationUser = new ApplicationUser
-        {
-            Id = Guid.NewGuid()
-        };
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync("testUserId")).ReturnsAsync(applicationUser);
-        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(applicationUser)).ReturnsAsync(new List<string>());
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+        
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetRolesAsync(mockUser.Object)).ReturnsAsync(new List<string>());
 
         // Act
         var result = await _fixture.IdentityService.CurrentUserHasAllRolesAsync("Admin");
@@ -574,11 +560,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task HasAccessAsync_ShouldReturnTrue_WhenUserHasFullAccessClaim()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var applicationUser = new ApplicationUser
-        {
-            Id = userId
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
         var claims = new List<Claim>
         {
             new(Constant.Claims.FullAccess, "true")
@@ -587,8 +570,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString())
         })));
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(applicationUser)).ReturnsAsync(claims);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
 
         // Act
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
@@ -601,11 +584,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task HasAccessAsync_ShouldReturnTrue_WhenUserHasRequiredPermissionClaim()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var applicationUser = new ApplicationUser
-        {
-            Id = userId
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
         var claims = new List<Claim>
         {
             new("Permission", "SomePermission") // Permission claim
@@ -614,8 +594,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString())
         })));
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(applicationUser)).ReturnsAsync(claims);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
 
         // Act
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");
@@ -628,11 +608,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
     public async Task HasAccessAsync_ShouldReturnFalse_WhenUserLacksAccessClaim()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var applicationUser = new ApplicationUser
-        {
-            Id = userId
-        };
+        var userId = "1cfb4096-1f1c-4381-897c-08dd348ace72";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
         var claims = new List<Claim>
         {
             new("Permission", "OtherPermission") // Some permission other than the required one
@@ -641,8 +618,8 @@ public class IdentityServiceTests : IClassFixture<IdentityServiceFixture>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString())
         })));
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(applicationUser);
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(applicationUser)).ReturnsAsync(claims);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
 
         // Act
         var result = await _fixture.IdentityService.HasAccessAsync("SomePermission");

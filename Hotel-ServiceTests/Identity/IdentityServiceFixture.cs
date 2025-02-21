@@ -6,7 +6,7 @@ using ContactsManager.Core.Domain.IdentityEntities;
 
 namespace Hotel_ServiceTests
 {
-    public class IdentityServiceFixture : IDisposable
+    public class IdentityServiceFixture
     {
         public Mock<IHttpContextAccessor> MockHttpContextAccessor { get; }
         public Mock<UserManager<ApplicationUser>> MockUserManager { get; }
@@ -20,7 +20,13 @@ namespace Hotel_ServiceTests
 
             IdentityService = new IdentityService(MockHttpContextAccessor.Object, MockUserManager.Object);
         }
+        
+        public Mock<ApplicationUser> GetMockUser(Guid userId)
+        {
+            var mockUser = new Mock<ApplicationUser>();
+            mockUser.Setup(u => u.Id).Returns(userId);
 
-        public void Dispose() { }
+            return mockUser;
+        }
     }
 }
