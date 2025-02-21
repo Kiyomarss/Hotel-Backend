@@ -162,4 +162,46 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
 
     #endregion
 
+    #region GetClaimsByUserAsync
+
+    [Fact]
+    public async Task GetClaimsByUserAsync_ShouldReturnClaims_WhenUserExists()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+        var claims = _fixture.GetClaims();
+
+        // Mock FindByIdAsync and GetClaimsAsync
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
+
+        // Act
+        var result = await _fixture.UserClaimService.GetClaimsByUserAsync(userId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(claims.Count, result.Count);
+        Assert.All(result, claim => claims.Contains(claim));
+    }
+
+    [Fact]
+    public async Task GetClaimsByUserAsync_ShouldReturnEmptyList_WhenUserDoesNotExist()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+
+        // Mock FindByIdAsync to return null (user not found)
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync((ApplicationUser)null);
+
+        // Act
+        var result = await _fixture.UserClaimService.GetClaimsByUserAsync(userId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    #endregion
+
 }
