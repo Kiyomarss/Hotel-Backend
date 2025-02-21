@@ -83,17 +83,15 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
     [Fact]
     public async Task RemoveClaimFromUserAsync_ShouldReturnTrue_WhenClaimIsRemovedSuccessfully()
     {
+        // Arrange
         var userId = Guid.NewGuid().ToString();
         var claimType = "Permission";
-        var claimValue = "Admin";
+        var claimValue = "SomePermission";
         var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
+        // Setup the mock for FindByIdAsync and GetClaimsAsync
         _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
-
-        var claims = _fixture.GetClaims();
-        claims.Add(new Claim(claimType, claimValue));
-
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(_fixture.GetClaims());
         _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(mockUser.Object, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
 
         // Act
@@ -102,7 +100,7 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         // Assert
         Assert.True(result);
     }
-    
+
     [Fact]
     public async Task RemoveClaimFromUserAsync_ShouldReturnFalse_WhenUserDoesNotExist()
     {
