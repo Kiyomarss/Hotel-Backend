@@ -93,13 +93,11 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var claimType = "Permission";
         var claimValue = "SomePermission";
 
-        // Mock the user and claims
         var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
-        // Setup the mock for FindByIdAsync, GetClaimsAsync, and RemoveClaimAsync
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(mockUser.Object);
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(_fixture.GetClaims());
-        _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<Claim>()))
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(_fixture.GetClaims());
+        _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(mockUser.Object, It.IsAny<Claim>()))
                 .ReturnsAsync(IdentityResult.Success);
 
         // Act
@@ -118,14 +116,13 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var claimType = "Permission";
         var claimValue = "Admin";
 
-        // Setup the mock for FindByIdAsync to return null (user not found)
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(It.IsAny<string>())).ReturnsAsync((ApplicationUser)null);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync((ApplicationUser)null);
 
         // Act
         var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
 
         // Assert
-        result.Should().BeFalse(); // FluentAssertions to check if the result is false
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -137,15 +134,14 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var claimValue = "Admin";
         var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
-        // Setup the mock for FindByIdAsync and GetClaimsAsync
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(mockUser.Object);
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(new List<Claim>());
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(new List<Claim>());
 
         // Act
         var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
 
         // Assert
-        result.Should().BeFalse(); // FluentAssertions to check if the result is false
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -157,16 +153,15 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var claimValue = "Admin";
         var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
 
-        // Setup the mock for FindByIdAsync and GetClaimsAsync
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(mockUser.Object);
-        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(_fixture.GetClaims());
-        _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Failed());
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(_fixture.GetClaims());
+        _fixture.MockUserManager.Setup(x => x.RemoveClaimAsync(mockUser.Object, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Failed());
 
         // Act
         var result = await _fixture.UserClaimService.RemoveClaimFromUserAsync(userId, claimType, claimValue);
 
         // Assert
-        result.Should().BeFalse(); // FluentAssertions to check if the result is false
+        result.Should().BeFalse();
     }
 
     #endregion
