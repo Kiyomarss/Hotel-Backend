@@ -19,7 +19,7 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
 
     #region AddClaimToUserAsync
 
-    [Fact]
+   [Fact]
     public async Task AddClaimToUserAsync_ShouldReturnTrue_WhenClaimIsAddedSuccessfully()
     {
         // Arrange
@@ -29,14 +29,17 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var mockUser = _fixture.GetMockUser(userId);
 
         // Setup the mock for FindByIdAsync and AddClaimAsync
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(mockUser.Object);
-        _fixture.MockUserManager.Setup(x => x.AddClaimAsync(mockUser.Object, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId.ToString()))
+            .ReturnsAsync(mockUser.Object);
+
+        _fixture.MockUserManager.Setup(x => x.AddClaimAsync(mockUser.Object, It.IsAny<Claim>()))
+            .ReturnsAsync(IdentityResult.Success);
 
         // Act
         var result = await _fixture.UserClaimService.AddClaimToUserAsync(userId.ToString(), claimType, claimValue);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue(); // Using FluentAssertions
     }
 
     [Fact]
@@ -48,13 +51,14 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var claimValue = "Admin";
 
         // Setup the mock for FindByIdAsync to return null (user not found)
-        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync((ApplicationUser)null);
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId))
+            .ReturnsAsync((ApplicationUser)null);
 
         // Act
         var result = await _fixture.UserClaimService.AddClaimToUserAsync(userId, claimType, claimValue);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse(); // Using FluentAssertions
     }
 
     [Fact]
@@ -74,7 +78,7 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
         var result = await _fixture.UserClaimService.AddClaimToUserAsync(userId.ToString(), claimType, claimValue);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse(); // Using FluentAssertions
     }
 
     #endregion
