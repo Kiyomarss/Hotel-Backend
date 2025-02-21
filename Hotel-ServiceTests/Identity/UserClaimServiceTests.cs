@@ -204,4 +204,67 @@ public class UserClaimServiceTests : IClassFixture<UserClaimServiceFixture>
 
     #endregion
 
+    #region UserHasClaimAsync
+
+    [Fact]
+    public async Task UserHasClaimAsync_ShouldReturnTrue_WhenUserHasClaim()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var claimType = "Permission";
+        var claimValue = "Admin";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+        var claims = new List<Claim> { new(claimType, claimValue) };
+
+        // Mock FindByIdAsync and GetClaimsAsync
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
+
+        // Act
+        var result = await _fixture.UserClaimService.UserHasClaimAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task UserHasClaimAsync_ShouldReturnFalse_WhenUserDoesNotHaveClaim()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var claimType = "Permission";
+        var claimValue = "Admin";
+        var mockUser = _fixture.GetMockUser(Guid.Parse(userId));
+        var claims = new List<Claim>(); // کاربر هیچ کِلیمی ندارد
+
+        // Mock FindByIdAsync and GetClaimsAsync
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(mockUser.Object);
+        _fixture.MockUserManager.Setup(x => x.GetClaimsAsync(mockUser.Object)).ReturnsAsync(claims);
+
+        // Act
+        var result = await _fixture.UserClaimService.UserHasClaimAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task UserHasClaimAsync_ShouldReturnFalse_WhenUserDoesNotExist()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var claimType = "Permission";
+        var claimValue = "Admin";
+
+        // Mock FindByIdAsync to return null (کاربر پیدا نشد)
+        _fixture.MockUserManager.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync((ApplicationUser)null);
+
+        // Act
+        var result = await _fixture.UserClaimService.UserHasClaimAsync(userId, claimType, claimValue);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
 }
