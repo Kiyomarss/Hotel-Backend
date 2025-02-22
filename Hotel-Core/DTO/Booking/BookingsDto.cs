@@ -13,3 +13,9 @@ public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, 
 public record GetStaysAfterDateResult(string Status, string CreateAt);
 
 public record BookingResult(string Status, int TotalPrice, string CabinName,  string CountryFlag, string Nationality);
+
+public record AddExternalLoginRequest(string UserId, string LoginProvider, string ProviderKey, string ProviderDisplayName);
+
+public record RemoveExternalLoginRequest(string UserId, string LoginProvider, string ProviderKey);
+
+public record ExternalLoginRequest(string LoginProvider, string ProviderKey, string ProviderDisplayName);

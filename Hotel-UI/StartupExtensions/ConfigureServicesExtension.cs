@@ -1,6 +1,8 @@
 ﻿using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Core.ServiceContracts;
+using Hotel_Core.ServiceContracts.Base;
 using Hotel_Core.Services;
+using Hotel_Core.Services.Base;
 using Hotel_Infrastructure.DbContext;
 using Hotel_Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -28,6 +30,8 @@ namespace Hotel_UI
    services.AddScoped<IUnitOfWork, UnitOfWork>();
    
    services.AddScoped<IAuthService, AuthService>();
+   
+   services.AddScoped<ITokenService, TokenService>();
    
    services.AddScoped<IRoleClaimService, RoleClaimService>();
    services.AddScoped<IUserClaimService, UserClaimService>();

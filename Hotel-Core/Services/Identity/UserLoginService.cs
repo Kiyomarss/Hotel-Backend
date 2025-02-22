@@ -32,5 +32,28 @@ namespace Hotel_Core.Services
         {
             return await _userManager.GetLoginsAsync(user);
         }
+
+        public async Task<ApplicationUser?> ExternalLoginAsync(UserLoginInfo loginInfo)
+        {
+            var user = await _userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+
+            if (user != null)
+                return user;
+
+            var newUser = new ApplicationUser
+            {
+                UserName = loginInfo.ProviderKey, Email = loginInfo.ProviderKey + "@example.com",
+            };
+
+            var result = await _userManager.CreateAsync(newUser);
+            if (result.Succeeded)
+            {
+                await _userManager.AddLoginAsync(newUser, loginInfo);
+
+                return newUser;
+            }
+
+            return null;
+        }
     }
 }

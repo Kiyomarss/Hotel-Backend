@@ -1,6 +1,7 @@
 using ContactsManager.Core.Domain.IdentityEntities;
 using Hotel_Core.DTO;
 using Hotel_Core.DTO.Auth;
+using Microsoft.AspNetCore.Identity;
 
 namespace Hotel_Core.ServiceContracts;
 
@@ -21,4 +22,8 @@ public interface IAuthService
     Task<string> UpdateAvatarAsync(Stream avatarStream);
 
     Task DeleteUserAsync(string userId);
+    
+    Task<ApplicationUser?> GetUserByExternalProviderAsync(UserLoginInfo loginInfo);
+    
+    Task<ApplicationUser?> RegisterUserFromExternalProviderAsync(ExternalLoginInfo info);
 }
