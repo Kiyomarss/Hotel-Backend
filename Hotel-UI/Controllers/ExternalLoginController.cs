@@ -27,7 +27,7 @@ public class ExternalLoginController : BaseController
         var user = await _userManager.FindByIdAsync(request.UserId);
 
         if (user == null)
-            return NotFound("User not found.");
+            return NotFound(new MessageResponse("User not found."));
 
         var loginInfo = new UserLoginInfo(request.LoginProvider, request.ProviderKey, request.ProviderDisplayName);
 
@@ -36,7 +36,7 @@ public class ExternalLoginController : BaseController
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        return Ok("External login added successfully.");
+        return Ok(new MessageResponse("External login added successfully."));
     }
 
     [HttpPost("remove")]
@@ -45,14 +45,14 @@ public class ExternalLoginController : BaseController
         var user = await _userManager.FindByIdAsync(request.UserId);
 
         if (user == null)
-            return NotFound("User not found.");
+            return NotFound(new MessageResponse("User not found."));
 
         var result = await _userLoginService.RemoveLoginAsync(user, request.LoginProvider, request.ProviderKey);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        return Ok("External login removed successfully.");
+        return Ok(new MessageResponse("External login removed successfully."));
     }
 
     [HttpGet("logins/{userId}")]
@@ -61,7 +61,7 @@ public class ExternalLoginController : BaseController
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null)
-            return NotFound("User not found.");
+            return NotFound(new MessageResponse("User not found."));
 
         var logins = await _userLoginService.GetLoginsAsync(user);
 
@@ -72,11 +72,10 @@ public class ExternalLoginController : BaseController
     public async Task<IActionResult> ExternalLogin([FromBody] ExternalLoginRequest request)
     {
         var loginInfo = new UserLoginInfo(request.LoginProvider, request.ProviderKey, request.ProviderDisplayName);
-
-        var user = await _userLoginService.ExternalLoginAsync(loginInfo);
+        var user = await _userLoginService.ExternalLoginAsync(loginInfo, request.EmailFromProvider);
 
         if (user == null)
-            return Unauthorized("External login failed.");
+            return Unauthorized(new MessageResponse("External login failed: Unable to create or find user."));
 
         var token = await _tokenService.GenerateJwtToken(user);
         return Ok(new LoginResult(token));

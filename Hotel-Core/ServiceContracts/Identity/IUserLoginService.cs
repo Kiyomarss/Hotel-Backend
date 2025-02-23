@@ -13,6 +13,6 @@ namespace Hotel_Core.ServiceContracts
         
         Task<IList<UserLoginInfo>> GetLoginsAsync(ApplicationUser user);
 
-        Task<ApplicationUser?> ExternalLoginAsync(UserLoginInfo loginInfo);
+        Task<ApplicationUser?> ExternalLoginAsync(UserLoginInfo loginInfo, string? emailFromProvider);
     }
 }
