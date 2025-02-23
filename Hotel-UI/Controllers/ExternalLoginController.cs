@@ -21,24 +21,6 @@ public class ExternalLoginController : BaseController
         _tokenService = tokenService;
     }
 
-    [HttpPost("add")]
-    public async Task<IActionResult> AddExternalLogin([FromBody] AddExternalLoginRequest request)
-    {
-        var user = await _userManager.FindByIdAsync(request.UserId);
-
-        if (user == null)
-            return NotFound(new MessageResponse("User not found."));
-
-        var loginInfo = new UserLoginInfo(request.LoginProvider, request.ProviderKey, request.ProviderDisplayName);
-
-        var result = await _userLoginService.AddLoginAsync(user, loginInfo);
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok(new MessageResponse("External login added successfully."));
-    }
-
     [HttpPost("remove")]
     public async Task<IActionResult> RemoveExternalLogin([FromBody] RemoveExternalLoginRequest request)
     {

@@ -13,11 +13,6 @@ namespace Hotel_Core.Services
             _userManager = userManager;
         }
 
-        public async Task<IdentityResult> AddLoginAsync(ApplicationUser user, UserLoginInfo loginInfo)
-        {
-            return await _userManager.AddLoginAsync(user, loginInfo);
-        }
-
         public async Task<IdentityResult> RemoveLoginAsync(ApplicationUser user, string loginProvider, string providerKey)
         {
             return await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
