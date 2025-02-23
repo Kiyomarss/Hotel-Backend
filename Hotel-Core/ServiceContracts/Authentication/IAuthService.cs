@@ -22,8 +22,4 @@ public interface IAuthService
     Task<string> UpdateAvatarAsync(Stream avatarStream);
 
     Task DeleteUserAsync(string userId);
-    
-    Task<ApplicationUser?> GetUserByExternalProviderAsync(UserLoginInfo loginInfo);
-    
-    Task<ApplicationUser?> RegisterUserFromExternalProviderAsync(ExternalLoginInfo info);
 }

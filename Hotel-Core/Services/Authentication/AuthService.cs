@@ -138,29 +138,5 @@ namespace Hotel_Core.Services
             if (!result.Succeeded)
                 throw new InvalidOperationException("Delete Failed.");
         }
-        
-        public async Task<ApplicationUser?> GetUserByExternalProviderAsync(UserLoginInfo loginInfo)
-        {
-            return await _userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
-        }
-
-        public async Task<ApplicationUser?> RegisterUserFromExternalProviderAsync(ExternalLoginInfo info)
-        {
-            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            if (email == null) return null;
-
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                EmailConfirmed = true
-            };
-
-            var result = await _userManager.CreateAsync(user);
-            if (!result.Succeeded) return null;
-
-            var loginResult = await _userManager.AddLoginAsync(user, info);
-            return !loginResult.Succeeded ? null : user;
-        }
     }
 }
