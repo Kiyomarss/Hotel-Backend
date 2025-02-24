@@ -12,6 +12,8 @@ public interface IAuthService
     Task<LoginResult> LoginAsync(LoginRequest request);
     
     Task LogoutAsync();
+
+    Task<LoginResult> RefreshTokenAsync(string refreshToken, string email);
     
     Task ChangePasswordAsync(ChangePasswordRequest request);
 

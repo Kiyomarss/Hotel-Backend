@@ -52,14 +52,44 @@ namespace Hotel_Core.Services
                 throw new InvalidOperationException("Invalid credentials.");
 
             var token = await _tokenService.GenerateJwtToken(user);
-            return new LoginResult(token, new UserDetails(user.PersonName, user.Email, user.AvatarPath));
+
+            var refreshToken = Guid.NewGuid().ToString();
+            await _userManager.SetAuthenticationTokenAsync(user, "JWT", "RefreshToken", refreshToken);
+
+            return new LoginResult(token, new UserDetails(user.PersonName, user.Email, user.AvatarPath), refreshToken);
         }
 
         public async Task LogoutAsync()
         {
+            var user = await _identityService.GetCurrentUserWithoutErrorAsync();
+            if (user != null)
+            {
+                await _userManager.RemoveAuthenticationTokenAsync(user, "JWT", "RefreshToken");
+            }
+
             await _signInManager.SignOutAsync();
         }
         
+        public async Task<LoginResult> RefreshTokenAsync(string refreshToken, string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                throw new UnauthorizedAccessException("User not found.");
+
+            var savedToken = await _userManager.GetAuthenticationTokenAsync(user, "JWT", "RefreshToken");
+
+            if (savedToken == null || savedToken != refreshToken)
+                throw new UnauthorizedAccessException("Invalid refresh token.");
+
+            await _userManager.RemoveAuthenticationTokenAsync(user, "JWT", "RefreshToken");
+
+            var newJwtToken = await _tokenService.GenerateJwtToken(user);
+
+            var newRefreshToken = Guid.NewGuid().ToString();
+            await _userManager.SetAuthenticationTokenAsync(user, "JWT", "RefreshToken", newRefreshToken);
+
+            return new LoginResult(newJwtToken, new UserDetails(user.PersonName, user.Email, user.AvatarPath), newRefreshToken);
+        }
 
         public async Task ChangePasswordAsync(ChangePasswordRequest request)
         {

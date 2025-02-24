@@ -5,7 +5,7 @@ namespace Hotel_Core.DTO.Auth;
 
 public record SignupRequest(string PersonName, string Email, string Password);
 
-public record LoginResult(string Token = "", UserDetails User = null);
+public record LoginResult(string Token = "", UserDetails User = null, string RefreshToken = "");
 
 public record LoginRequest(string Email, string Password);
 

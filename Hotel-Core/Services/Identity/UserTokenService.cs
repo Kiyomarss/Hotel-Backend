@@ -13,28 +13,22 @@ namespace Hotel_Core.Services
             _userManager = userManager;
         }
 
-        public async Task AddUserTokenAsync(string userId, string loginProvider, string name, string value)
+        public async Task<bool> AddUserTokenAsync(string userId, string loginProvider, string name, string value)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return;
+            if (user == null) return false;
 
-            var token = new IdentityUserToken<string>
-            {
-                UserId = userId,
-                LoginProvider = loginProvider,
-                Name = name,
-                Value = value
-            };
-
-            await _userManager.SetAuthenticationTokenAsync(user, loginProvider, name, value);
+            var result = await _userManager.SetAuthenticationTokenAsync(user, loginProvider, name, value);
+            return result == IdentityResult.Success;
         }
 
-        public async Task RemoveUserTokenAsync(string userId, string loginProvider, string name)
+        public async Task<bool> RemoveUserTokenAsync(string userId, string loginProvider, string name)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return;
+            if (user == null) return false;
 
-            await _userManager.RemoveAuthenticationTokenAsync(user, loginProvider, name);
+            var result = await _userManager.RemoveAuthenticationTokenAsync(user, loginProvider, name);
+            return result == IdentityResult.Success;
         }
 
         public async Task<string?> GetUserTokenAsync(string userId, string loginProvider, string name)
@@ -47,7 +41,11 @@ namespace Hotel_Core.Services
 
         public async Task<bool> TokenExistsAsync(string userId, string loginProvider, string name)
         {
-            return !string.IsNullOrEmpty(await GetUserTokenAsync(userId, loginProvider, name));
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            var token = await _userManager.GetAuthenticationTokenAsync(user, loginProvider, name);
+            return !string.IsNullOrEmpty(token);
         }
     }
 }
