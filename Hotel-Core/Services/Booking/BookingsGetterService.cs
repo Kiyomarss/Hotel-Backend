@@ -42,7 +42,7 @@ namespace Services
   {
    var bookings = await _bookingsRepository.GetStaysTodayActivity();
 
-   return bookings.Select(s => new GetStaysTodayActivityBookingResult(s.Status, s.TotalPrice, s.NumGuests, s.Guest.CountryFlag)).ToList();
+   return bookings.Select(s => new GetStaysTodayActivityBookingResult(s.Status, s.TotalPrice, s.NumGuests, s.Guest.CountryFlag, s.Guest.FullName)).ToList();
   }
 
   public virtual async Task<BookingResult?> GetBookingByBookingId(Guid bookingId)

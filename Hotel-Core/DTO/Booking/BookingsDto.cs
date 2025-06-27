@@ -8,7 +8,7 @@ public record BookingsItemResult(string Status, int TotalPrice, string CabinName
 
 public record DeleteBookingResult(bool IsDeleted);
 
-public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, int NumGuests, string CountryFlag);
+public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, int NumGuests, string  CountryFlag, string FullName);
 
 public record GetStaysAfterDateResult(string Status, string CreateAt);
 
