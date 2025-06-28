@@ -51,11 +51,18 @@ public class BookingsController  : BaseController
     }
     
     [HttpGet]
+    public async Task<IActionResult> GetBookingsAfterDate([FromQuery] DateTime date)
+    {
+        var bookingResponsesList = await _bookingsGetterService.GetBookingsAfterDate(date);
+        return Ok(bookingResponsesList);
+    }
+    
+    [HttpGet]
     public async Task<IActionResult> GetStaysAfterDate([FromQuery] DateTime date)
     {
-        var bookingResponsesList = await _bookingsGetterService.GetStaysAfterDate(date);
+        var results = await _bookingsGetterService.GetStaysAfterDate(date);
 
-        return Ok(bookingResponsesList);
+        return Ok(results);
     }
 
     [HttpGet]

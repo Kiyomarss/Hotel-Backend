@@ -4,13 +4,15 @@ public record GetBookingsQuery(string? Status,string? SortBy,string? SortDirecti
 
 public record BookingsResult(List<BookingsItemResult> Bookings, int TotalCount);
 
-public record BookingsItemResult(string Status, int TotalPrice, string CabinName, string CountryFlag, string CreateAt);
+public record BookingsItemResult(string Status, int TotalPrice, int NumNights, int NumGuests, string CabinName, string GuestName, string Email, string CountryFlag, string StartDate, string EndDate, string CreateAt);
 
 public record DeleteBookingResult(bool IsDeleted);
 
 public record GetStaysTodayActivityBookingResult(string Status, int TotalPrice, int NumGuests, string  CountryFlag, string FullName);
 
-public record GetStaysAfterDateResult(string Status, string CreateAt);
+public record GetBookingsAfterDateResult(int TotalPrice, int ExtrasPrice, string CreateAt);
+
+public record GetStaysAfterDateResult(int NumNights, string Status, string CreateAt);
 
 public record BookingResult(string Status, int TotalPrice, string CabinName,  string CountryFlag, string Nationality);
 

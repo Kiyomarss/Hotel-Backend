@@ -26,16 +26,23 @@ namespace Services
 
    return new PaginatedResult<BookingsItemResult>
    {
-    Items = paginatedResult.Items.Select(s => new BookingsItemResult(s.Status, s.TotalPrice, s.Cabin.Name, s.Guest.CountryFlag, s.CreateAt.ToString())).ToList(),
+    Items = paginatedResult.Items.Select(s => new BookingsItemResult(s.Status, s.TotalPrice, s.NumNights, s.NumGuests, s.Cabin.Name, s.Guest.FullName, s.Guest.Email, s.Guest.CountryFlag, s.StartDate.ToString("yyyy-MM-dd"), s.EndDate.ToString("yyyy-MM-dd"), s.CreateAt.ToString("yyyy-MM-dd"))).ToList(),
     TotalCount = paginatedResult.TotalCount
    };
   }
   
- public async Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date)
+  public async Task<List<GetBookingsAfterDateResult>> GetBookingsAfterDate(DateTime date)
+  {
+   var bookings = await _bookingsRepository.GetBookingsAfterDate(date);
+
+   return bookings.Select(s => new GetBookingsAfterDateResult(s.TotalPrice, s.ExtrasPrice, s.CreateAt.ToString("yyyy-MM-dd"))).ToList();
+  }
+  
+  public async Task<List<GetStaysAfterDateResult>> GetStaysAfterDate(DateTime date)
   {
    var bookings = await _bookingsRepository.GetStaysAfterDate(date);
 
-   return bookings.Select(s => new GetStaysAfterDateResult(s.Status, s.CreateAt.ToString())).ToList();
+   return bookings.Select(s => new GetStaysAfterDateResult(s.NumNights, s.Status, s.CreateAt.ToString("yyyy-MM-dd"))).ToList();
   }
   
   public async Task<List<GetStaysTodayActivityBookingResult>> GetStaysTodayActivity()

@@ -80,7 +80,13 @@ namespace Hotel_Infrastructure.Repositories
             };
         }
 
-       public async Task<List<Booking>> GetStaysAfterDate(DateTime date)
+        public async Task<List<Booking>> GetBookingsAfterDate(DateTime date)
+        {
+            return await _db.Set<Booking>()
+                            .ToListAsync();
+        }
+        
+        public async Task<List<Booking>> GetStaysAfterDate(DateTime date)
         {
             return await _db.Set<Booking>()
                 .Where(b => (b.Status == "checked-in" || b.Status == "unconfirmed"))
