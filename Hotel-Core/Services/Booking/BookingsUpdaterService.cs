@@ -42,7 +42,7 @@ namespace Services
             {
                 var updatedBooking = await _bookingsRepository.UpdateBooking(matchingBooking);
 
-                return new BookingResult(updatedBooking.Status, updatedBooking.TotalPrice, updatedBooking.Cabin.Name, updatedBooking.Guest.CountryFlag, updatedBooking.Guest.Nationality);
+                return new BookingResult(updatedBooking.Id, updatedBooking.Status, updatedBooking.TotalPrice, updatedBooking.Cabin.Name, updatedBooking.Guest.CountryFlag, updatedBooking.Guest.Nationality);
             });
         }
 
