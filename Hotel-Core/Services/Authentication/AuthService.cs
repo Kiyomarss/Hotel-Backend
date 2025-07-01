@@ -111,7 +111,7 @@ namespace Hotel_Core.Services
                 throw new InvalidOperationException("Failed to update UserName.");
         }
 
-        public async Task ChangePersonNameAsync(string newPersonName)
+        public async Task UpdatePersonNameAsync(string newPersonName)
         {
             var user = await _identityService.GetCurrentUserAsync();
 

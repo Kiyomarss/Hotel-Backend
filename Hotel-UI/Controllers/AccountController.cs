@@ -51,23 +51,16 @@ namespace Hotel_UI.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> ChangeUserName(string newUserName)
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> UpdatePersonName(UpdatePersonNameRequest nameRequest)
         {
-            await _authService.ChangeUserNameAsync(newUserName);
-
-            return Ok(new MessageResponse("UserName updated successfully."));
-        }
+            await _authService.UpdatePersonNameAsync(nameRequest.NewPersonName);
         
-        [HttpPost]
-        public async Task<IActionResult> ChangePersonName(string newPersonName)
-        {
-            await _authService.ChangePersonNameAsync(newPersonName);
-
             return Ok(new MessageResponse("PersonName updated successfully."));
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateAvatar(UpdateAvatarRequest request)
+        public async Task<IActionResult> UpdateAvatar([FromForm] UpdateAvatarRequest request)
         {
             if (request.Avatar.Length == 0)
                 return BadRequest(new MessageResponse("No avatar file provided."));

@@ -19,7 +19,7 @@ public interface IAuthService
 
     Task ChangeUserNameAsync(string newUserName);
 
-    Task ChangePersonNameAsync(string newPersonName);
+    Task UpdatePersonNameAsync(string newPersonName);
     
     Task<string> UpdateAvatarAsync(Stream avatarStream);
 

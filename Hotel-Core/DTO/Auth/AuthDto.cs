@@ -15,6 +15,6 @@ public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
 public record UpdateAvatarRequest(IFormFile Avatar);
 
-public record UpdateUserNameRequest(string PersonName);
+public record UpdatePersonNameRequest(string NewPersonName);
 
 public record UserDto(string FullName, string Email, string? AvatarPath);
